@@ -1,7 +1,8 @@
-import { supabase } from '../supabase'
+import { getSupabase } from '../supabase'
 
-describe('supabase client', () => {
-  it('exports a supabase client instance', () => {
+describe('getSupabase', () => {
+  it('returns a supabase client instance', () => {
+    const supabase = getSupabase()
     expect(supabase).toBeDefined()
     expect(typeof supabase.storage.from).toBe('function')
   })

@@ -5,7 +5,7 @@ import { POST } from '../route'
 import { NextRequest } from 'next/server'
 
 jest.mock('@/lib/supabase', () => ({
-  supabase: {
+  getSupabase: jest.fn().mockReturnValue({
     storage: {
       from: jest.fn().mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
@@ -14,7 +14,7 @@ jest.mock('@/lib/supabase', () => ({
         }),
       }),
     },
-  },
+  }),
 }))
 
 describe('POST /api/upload-photo', () => {
