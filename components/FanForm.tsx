@@ -75,12 +75,15 @@ export function FanForm() {
   return (
     <div className="w-full max-w-md mx-auto px-4 py-8">
       {/* 49ers header */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-black text-[var(--niners-gold)] tracking-wider">
-          🏈 NINER EMPIRE
-        </h1>
-        <p className="text-[var(--niners-gold-light)] text-sm font-semibold tracking-widest">
-          LOYALTY PROGRAM
+      <div className="flex flex-col items-center mb-6">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.jpg"
+          alt="Niner Empire México"
+          className="w-52 h-auto mb-2"
+        />
+        <p className="text-[var(--niners-gold-light)] text-sm font-semibold tracking-widest uppercase">
+          Loyalty Program
         </p>
       </div>
 
