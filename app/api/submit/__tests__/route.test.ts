@@ -4,8 +4,12 @@
 import { POST } from '../route'
 import { NextRequest } from 'next/server'
 
-jest.mock('@/lib/sheets', () => ({
-  appendFanRow: jest.fn().mockResolvedValue(undefined),
+jest.mock('@/lib/supabase', () => ({
+  getSupabaseAdmin: jest.fn().mockReturnValue({
+    from: jest.fn().mockReturnValue({
+      insert: jest.fn().mockResolvedValue({ error: null }),
+    }),
+  }),
 }))
 
 describe('POST /api/submit', () => {

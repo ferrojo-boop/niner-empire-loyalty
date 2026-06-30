@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { appendFanRow } from '@/lib/sheets'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -11,9 +11,21 @@ export async function POST(req: NextRequest) {
   }
 
   const fanId = `NEL-${Date.now()}`
-  const fechaHora = new Date().toISOString()
+  const supabase = getSupabaseAdmin()
 
-  await appendFanRow({ id: fanId, nombre, email, whatsapp, fanDesde, urlFoto, fechaHora })
+  const { error } = await supabase.from('fans').insert({
+    fan_id: fanId,
+    nombre,
+    email,
+    whatsapp: whatsapp || null,
+    fan_desde: fanDesde,
+    foto_url: urlFoto,
+    ano_registro: new Date().getFullYear(),
+  })
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   return NextResponse.json({ fanId })
 }

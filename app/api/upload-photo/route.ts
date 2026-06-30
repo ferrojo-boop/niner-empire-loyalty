@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No photo provided' }, { status: 400 })
   }
 
-  const supabase = getSupabase()
+  const supabase = getSupabaseAdmin()
   const timestamp = Date.now()
   const safeName = nombre.replace(/[^a-z0-9]/gi, '-').toLowerCase()
   const fileName = `${timestamp}-${safeName}.jpg`
