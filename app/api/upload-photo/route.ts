@@ -12,17 +12,19 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabaseAdmin()
   const timestamp = Date.now()
-  const safeName = nombre.replace(/[^a-z0-9]/gi, '-').toLowerCase()
-  const fileName = `${timestamp}-${safeName}.jpg`
+  const safeName = (nombre ?? 'fan').replace(/[^a-z0-9]/gi, '-').toLowerCase()
+  const ext = photo.type === 'image/png' ? 'png' : 'jpg'
+  const fileName = `${timestamp}-${safeName}.${ext}`
 
   const arrayBuffer = await photo.arrayBuffer()
-  const buffer = new Uint8Array(arrayBuffer)
+  const blob = new Blob([arrayBuffer], { type: photo.type || 'image/jpeg' })
 
   const { error } = await supabase.storage
     .from('fan-photos')
-    .upload(fileName, buffer, { contentType: 'image/jpeg', upsert: false })
+    .upload(fileName, blob, { contentType: blob.type, upsert: false })
 
   if (error) {
+    console.error('Storage upload error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
