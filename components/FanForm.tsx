@@ -78,7 +78,7 @@ export function FanForm() {
       <div className="flex flex-col items-center mb-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/logo.jpg"
+          src="/NinerEmpireMX.png"
           alt="Niner Empire México"
           className="w-52 h-auto mb-2"
         />
