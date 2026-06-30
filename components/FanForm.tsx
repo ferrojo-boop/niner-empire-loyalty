@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { FanFormData, FormStep } from '@/lib/types'
 import { ProgressBar } from './ProgressBar'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
-import { FanCard } from './FanCard'
-import { generateAndDownloadCard } from '@/lib/generateCard'
 
 const initialData: FanFormData = {
   nombre: '',
@@ -19,11 +18,10 @@ const initialData: FanFormData = {
 }
 
 export function FanForm() {
+  const router = useRouter()
   const [step, setStep] = useState<FormStep>(1)
   const [data, setData] = useState<FanFormData>(initialData)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [fanId, setFanId] = useState<string | null>(null)
-  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function handleChange(partial: Partial<FanFormData>) {
@@ -36,7 +34,7 @@ export function FanForm() {
     setError(null)
 
     try {
-      // 1. Upload photo
+      // 1. Subir foto
       const photoFormData = new FormData()
       photoFormData.append('photo', data.photoFile)
       photoFormData.append('nombre', data.nombre)
@@ -44,9 +42,8 @@ export function FanForm() {
       const uploadRes = await fetch('/api/upload-photo', { method: 'POST', body: photoFormData })
       if (!uploadRes.ok) throw new Error('Error al subir la foto')
       const { url } = await uploadRes.json()
-      setUploadedPhotoUrl(url)
 
-      // 2. Submit fan data
+      // 2. Guardar datos del fan
       const submitRes = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,22 +56,19 @@ export function FanForm() {
         }),
       })
       if (!submitRes.ok) throw new Error('Error al guardar tus datos')
-      const { fanId: id } = await submitRes.json()
-      setFanId(id)
+      const { fanId } = await submitRes.json()
 
-      // 3. Generate card (after state updates render FanCard into DOM)
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      await generateAndDownloadCard(data.nombre)
+      // 3. Ir a la página de la tarjeta
+      router.push(`/tarjeta/${fanId}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado')
-    } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-8">
-      {/* 49ers header */}
+      {/* Header */}
       <div className="flex flex-col items-center mb-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -104,16 +98,6 @@ export function FanForm() {
           <p className="mt-4 text-red-300 text-sm font-bold text-center">{error}</p>
         )}
       </div>
-
-      {/* Hidden card for generation — only rendered after fanId is set */}
-      {fanId && uploadedPhotoUrl && (
-        <FanCard
-          nombre={data.nombre}
-          fanDesde={data.fanDesde as number}
-          fanId={fanId}
-          photoUrl={uploadedPhotoUrl}
-        />
-      )}
     </div>
   )
 }

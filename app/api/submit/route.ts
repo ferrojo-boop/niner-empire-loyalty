@@ -13,19 +13,23 @@ export async function POST(req: NextRequest) {
   const fanId = `NEL-${Date.now()}`
   const supabase = getSupabaseAdmin()
 
-  const { error } = await supabase.from('fans').insert({
-    fan_id: fanId,
-    nombre,
-    email,
-    whatsapp: whatsapp || null,
-    fan_desde: fanDesde,
-    foto_url: urlFoto,
-    ano_registro: new Date().getFullYear(),
-  })
+  const { data: inserted, error } = await supabase
+    .from('fans')
+    .insert({
+      fan_id: fanId,
+      nombre,
+      email,
+      whatsapp: whatsapp || null,
+      fan_desde: fanDesde,
+      foto_url: urlFoto,
+      ano_registro: new Date().getFullYear(),
+    })
+    .select('member_number')
+    .single()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ fanId })
+  return NextResponse.json({ fanId, memberNumber: inserted.member_number })
 }
