@@ -7,6 +7,7 @@ import { ProgressBar } from './ProgressBar'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
+import { WarningIcon } from './icons'
 
 const initialData: FanFormData = {
   nombre: '',
@@ -95,7 +96,10 @@ export function FanForm() {
         )}
 
         {error && (
-          <p className="mt-4 text-red-300 text-sm font-bold text-center">{error}</p>
+          <p role="alert" className="mt-4 flex items-center justify-center gap-2 text-[var(--niners-cream)] bg-black/30 rounded-lg px-4 py-2 text-sm font-bold text-center">
+            <WarningIcon size={18} className="shrink-0" />
+            {error}
+          </p>
         )}
       </div>
     </div>

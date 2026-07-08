@@ -7,6 +7,11 @@
   --niners-red-bright: #CC0000;
   --niners-gold: #B3995D;
   --niners-gold-light: #D4B878;
+  /* Text-safe warm tone for text placed on --niners-red surfaces.
+     --niners-gold/--niners-gold-light fail WCAG AA (2.82:1 / 4.03:1) on red;
+     this passes at 5.91:1. Reserve gold/gold-light for borders, icon fills,
+     and text on black surfaces where they already pass AA. */
+  --niners-cream: #F0DFC0;
   --niners-black: #1A1A1A;
   --niners-white: #FFFFFF;
 }
@@ -19,4 +24,16 @@ body {
 
 input, select {
   color: var(--niners-black);
+}
+
+button, a, input[type="checkbox"], input[type="radio"] {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

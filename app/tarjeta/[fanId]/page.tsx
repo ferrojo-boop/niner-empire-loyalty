@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { FanCard } from '@/components/FanCard'
+import { DownloadIcon, ShareIcon, SpinnerIcon, WarningIcon } from '@/components/icons'
 import QRCode from 'qrcode'
 
 const CARD_W = 863
@@ -95,22 +96,26 @@ export default function TarjetaPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#1A1A1A]">
-        <p className="text-[#B3995D] text-xl font-bold animate-pulse">Generando tu tarjeta...</p>
+      <main className="min-h-dvh flex items-center justify-center bg-[#1A1A1A]" aria-live="polite">
+        <p className="flex items-center gap-2 text-[#B3995D] text-xl font-bold motion-safe:animate-pulse">
+          <SpinnerIcon size={22} />
+          Generando tu tarjeta...
+        </p>
       </main>
     )
   }
 
   if (error || !fan) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#1A1A1A]">
-        <p className="text-red-400 text-xl font-bold">{error || 'Error inesperado'}</p>
+      <main className="min-h-dvh flex flex-col items-center justify-center gap-3 bg-[#1A1A1A] px-6" role="alert">
+        <WarningIcon size={40} className="text-red-400" />
+        <p className="text-red-400 text-xl font-bold text-center">{error || 'Error inesperado'}</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center bg-[#1A1A1A] py-8 px-4">
+    <main className="min-h-dvh flex flex-col items-center bg-[#1A1A1A] py-8 px-4">
       <h1 className="text-[#B3995D] text-2xl font-black tracking-widest mb-6 text-center uppercase">
         ¡Ya eres miembro!
       </h1>
@@ -142,25 +147,31 @@ export default function TarjetaPage() {
           onClick={handleSaveToPhotos}
           disabled={saving}
           className="w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider
+            flex items-center justify-center gap-2 cursor-pointer
             bg-[#B3995D] text-black border-2 border-[#B3995D]
             disabled:opacity-50 disabled:cursor-not-allowed
-            hover:bg-[#D4B878] transition-colors"
+            hover:bg-[#D4B878] transition-colors
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A1A]"
         >
-          {saving ? 'Guardando...' : '📸 Guardar en Fotos'}
+          {saving ? <SpinnerIcon size={20} /> : <ShareIcon size={20} />}
+          {saving ? 'Guardando...' : 'Guardar en Fotos'}
         </button>
         <button
           onClick={handleDownload}
           disabled={saving}
           className="w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider
+            flex items-center justify-center gap-2 cursor-pointer
             bg-transparent text-[#B3995D] border-2 border-[#B3995D]
             disabled:opacity-50 disabled:cursor-not-allowed
-            hover:bg-[#B3995D] hover:text-black transition-colors"
+            hover:bg-[#B3995D] hover:text-black transition-colors
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B3995D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A1A]"
         >
-          {saving ? 'Guardando...' : '⬇️ Descargar'}
+          {saving ? <SpinnerIcon size={20} /> : <DownloadIcon size={20} />}
+          {saving ? 'Guardando...' : 'Descargar'}
         </button>
       </div>
 
-      <p className="mt-6 text-gray-500 text-sm text-center">
+      <p className="mt-6 text-gray-400 text-sm text-center">
         Muestra el QR en cada visita al club para acumular puntos
       </p>
     </main>

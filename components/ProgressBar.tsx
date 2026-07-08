@@ -1,5 +1,7 @@
 'use client'
 
+import { CheckIcon } from './icons'
+
 interface ProgressBarProps {
   currentStep: 1 | 2 | 3
 }
@@ -12,26 +14,27 @@ const steps = [
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
-    <ol className="flex items-center justify-center gap-4 mb-8">
+    <ol aria-label={`Paso ${currentStep} de ${steps.length}`} className="flex items-center justify-center gap-4 mb-8">
       {steps.map((step, index) => {
         const isCompleted = step.number < currentStep
         const isActive = step.number === currentStep
         return (
           <li key={step.number} className="flex items-center gap-2">
             <div
+              aria-current={isActive ? 'step' : undefined}
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
                 isCompleted
                   ? 'bg-[var(--niners-gold)] border-[var(--niners-gold)] text-black'
                   : isActive
                   ? 'bg-[var(--niners-red-bright)] border-[var(--niners-gold)] text-white'
-                  : 'bg-transparent border-gray-500 text-gray-500'
+                  : 'bg-transparent border-gray-400 text-gray-400'
               }`}
             >
-              {isCompleted ? '✓' : step.number}
+              {isCompleted ? <CheckIcon size={16} /> : step.number}
             </div>
             <span
               className={`text-sm font-semibold ${
-                isActive ? 'text-[var(--niners-gold)]' : isCompleted ? 'text-[var(--niners-gold-light)]' : 'text-gray-500'
+                isActive ? 'text-[var(--niners-gold)]' : isCompleted ? 'text-[var(--niners-gold-light)]' : 'text-gray-400'
               }`}
             >
               {step.label}
