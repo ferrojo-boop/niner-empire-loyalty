@@ -5,6 +5,36 @@ import { ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons'
 
 const SLIDES = [
   {
+    src: '/NEMX2.jpeg',
+    alt: 'Decenas de miembros de Niner Empire México reunidos con jerseys de los 49ers en un watch party',
+    caption: 'Watch party de la Faithful mexicana',
+  },
+  {
+    src: '/NEMX7.jpeg',
+    alt: 'Dos miembros de espaldas con capas de Niner Empire México chocando los guantes',
+    caption: 'Las capas del Empire',
+  },
+  {
+    src: '/NEMX6.jpeg',
+    alt: 'Fan con penacho azteca y atuendo prehispánico animando desde la tribuna del estadio',
+    caption: 'Orgullo azteca en la tribuna',
+  },
+  {
+    src: '/NEMX5.jpeg',
+    alt: 'Grupo de miembros sosteniendo una bandera de los San Francisco 49ers junto a estandartes del club',
+    caption: 'La bandera SF en alto',
+  },
+  {
+    src: '/NEMX3.jpeg',
+    alt: 'Miembro de espaldas con la capa de Niner Empire México frente a un estadio lleno',
+    caption: 'Los colores en el estadio',
+  },
+  {
+    src: '/NEMX4.jpeg',
+    alt: 'Fan con máscara de luchador dorada y jersey número 13 de los 49ers festejando',
+    caption: 'Máscara y jersey, estilo mexicano',
+  },
+  {
     src: '/80years.jpg',
     alt: 'San Francisco 49ers — 80 Years Faithful, leyendas del equipo',
     caption: '80 años de historia Niner',
