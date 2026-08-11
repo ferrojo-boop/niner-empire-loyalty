@@ -19,10 +19,6 @@ export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <h2 className="text-2xl font-black text-[var(--niners-cream)] text-center">
-        ¡Obtén tu membresía como Fan!
-      </h2>
-
       <div className="flex flex-col gap-1">
         <label htmlFor="nombre" className="text-sm font-bold text-[var(--niners-cream)]">
           Nombre completo *

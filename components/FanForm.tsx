@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FanFormData, FormStep } from '@/lib/types'
-import { ProgressBar } from './ProgressBar'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
@@ -72,8 +71,6 @@ export function FanForm() {
     <div className="form-card">
       <h2>Obtén tu membresía digital sin costo</h2>
       <p className="lead">Regístrate en menos de 2 minutos y genera tu tarjeta digital de fan.</p>
-
-      <ProgressBar currentStep={step} />
 
       {step === 1 && (
         <StepFanData

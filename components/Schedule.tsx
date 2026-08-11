@@ -103,7 +103,7 @@ export function Schedule() {
         >
           <span className="flag">🇲🇽</span>
           <div className="copy">
-            <b>Semana 11 — ¡Los 49ers juegan en casa nuestra!</b>
+            <b>Semana 11 — ¡Los 49ers juegan en casa!</b>
             <span>49ers vs. Vikings · Estadio Banorte, Ciudad de México · 22 de noviembre · 7:20 PM (hora CDMX)</span>
           </div>
         </div>
