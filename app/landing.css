@@ -1,6 +1,7 @@
 /* Estilos del rediseño de la landing (hero, galería, sede, calendario).
    Todo queda bajo .landing para no afectar /tarjeta ni /checkin. */
 
+.landing { overflow-x: hidden; }
 .landing img { max-width: 100%; display: block; }
 .landing h1, .landing h2, .landing h3 { text-wrap: balance; margin: 0; }
 .landing a { color: inherit; }

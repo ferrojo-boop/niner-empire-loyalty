@@ -15,15 +15,18 @@ const steps = [
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
-    <ol aria-label={`Paso ${currentStep} de ${steps.length}`} className="flex items-center justify-center gap-4 mb-8">
+    <ol
+      aria-label={`Paso ${currentStep} de ${steps.length}`}
+      className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mb-8"
+    >
       {steps.map((step, index) => {
         const isCompleted = step.number < currentStep
         const isActive = step.number === currentStep
         return (
-          <li key={step.number} className="flex items-center gap-2">
+          <li key={step.number} className="flex items-center gap-1.5">
             <div
               aria-current={isActive ? 'step' : undefined}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold border-2 ${
                 isCompleted
                   ? 'bg-[var(--niners-gold)] border-[var(--niners-gold)] text-black'
                   : isActive
@@ -34,14 +37,14 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
               {isCompleted ? <CheckIcon size={16} /> : step.number}
             </div>
             <span
-              className={`text-sm font-semibold ${
+              className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${
                 isActive ? 'text-[var(--niners-gold)]' : isCompleted ? 'text-[var(--niners-gold-light)]' : 'text-gray-400'
               }`}
             >
               {step.label}
             </span>
             {index < steps.length - 1 && (
-              <div className={`w-8 h-px ${isCompleted ? 'bg-[var(--niners-gold)]' : 'bg-gray-600'}`} />
+              <div className={`hidden sm:block w-8 h-px shrink-0 ${isCompleted ? 'bg-[var(--niners-gold)]' : 'bg-gray-600'}`} />
             )}
           </li>
         )
