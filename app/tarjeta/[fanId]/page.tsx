@@ -4,10 +4,17 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { FanCard } from '@/components/FanCard'
 import { DownloadIcon, ShareIcon, SpinnerIcon, WarningIcon } from '@/components/icons'
+import { toSquareDataUrl } from '@/lib/squareCrop'
 import QRCode from 'qrcode'
 
 const CARD_W = 889
 const CARD_H = 1921
+// La tarjeta se captura al doble para que el PNG salga a la resolución nativa
+// del arte original (1778x3842). Foto y QR se preparan a ese mismo tamaño para
+// que no se reescalen hacia arriba al rasterizar.
+const CAPTURE_SCALE = 2
+const PHOTO_PX = 450 * CAPTURE_SCALE
+const QR_PX = 409 * CAPTURE_SCALE
 
 interface FanData {
   fan_id: string
@@ -26,6 +33,7 @@ export default function TarjetaPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [cardBlob, setCardBlob] = useState<Blob | null>(null)
+  const [photoSquareUrl, setPhotoSquareUrl] = useState('')
 
   useEffect(() => {
     setScale(Math.min(1, (window.innerWidth - 32) / CARD_W))
@@ -39,9 +47,17 @@ export default function TarjetaPage() {
 
         const qr = await QRCode.toDataURL(
           `${window.location.origin}/checkin/${fanId}`,
-          { width: 409, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
+          { width: QR_PX, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
         )
         setQrDataUrl(qr)
+
+        // Se deja la foto ya cuadrada antes de pintarla en la tarjeta; si falla,
+        // se usa la original y el CSS la recorta al menos en pantalla.
+        try {
+          setPhotoSquareUrl(await toSquareDataUrl(data.foto_url, PHOTO_PX))
+        } catch {
+          setPhotoSquareUrl(data.foto_url)
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Error al cargar')
       } finally {
@@ -56,7 +72,7 @@ export default function TarjetaPage() {
   // llama casi de inmediato tras el gesto del usuario, y renderizar con
   // html2canvas en ese momento tarda demasiado y "expira" ese permiso.
   useEffect(() => {
-    if (!fan || !qrDataUrl) return
+    if (!fan || !qrDataUrl || !photoSquareUrl) return
     let cancelled = false
     const timer = setTimeout(() => {
       getCardBlob()
@@ -78,7 +94,7 @@ export default function TarjetaPage() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [fan, qrDataUrl, fanId])
+  }, [fan, qrDataUrl, photoSquareUrl, fanId])
 
   async function waitForImages(el: HTMLElement) {
     const imgs = Array.from(el.querySelectorAll('img'))
@@ -102,7 +118,7 @@ export default function TarjetaPage() {
     const el = document.getElementById('fan-card-capture')
     if (!el) throw new Error('No se encontró la tarjeta')
     await waitForImages(el)
-    const canvas = await html2canvas(el, { useCORS: true, scale: 2, backgroundColor: null })
+    const canvas = await html2canvas(el, { useCORS: true, scale: CAPTURE_SCALE, backgroundColor: null })
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
     if (!blob) throw new Error('No se pudo generar la imagen de la tarjeta')
     return blob
@@ -194,7 +210,7 @@ export default function TarjetaPage() {
             nombre={fan.nombre}
             fanId={fan.fan_id}
             memberNumber={fan.member_number}
-            photoUrl={fan.foto_url}
+            photoUrl={photoSquareUrl}
             qrDataUrl={qrDataUrl}
           />
         </div>
@@ -207,7 +223,7 @@ export default function TarjetaPage() {
           nombre={fan.nombre}
           fanId={fan.fan_id}
           memberNumber={fan.member_number}
-          photoUrl={fan.foto_url}
+          photoUrl={photoSquareUrl}
           qrDataUrl={qrDataUrl}
         />
       </div>
