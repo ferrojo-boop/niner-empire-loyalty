@@ -4,7 +4,7 @@ import { BenefitsButton } from './BenefitsButton'
 export function Hero() {
   return (
     <section className="hero">
-      <div className="hero-bg" style={{ backgroundImage: "url('/80years.jpg')" }} />
+      <div className="hero-bg" style={{ backgroundImage: "url('/49ers_80.jpg')" }} />
       <div className="hero-overlay" />
       <div className="hero-inner">
         <div className="hero-badge-col">
