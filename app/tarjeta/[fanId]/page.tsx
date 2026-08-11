@@ -6,8 +6,8 @@ import { FanCard } from '@/components/FanCard'
 import { DownloadIcon, ShareIcon, SpinnerIcon, WarningIcon } from '@/components/icons'
 import QRCode from 'qrcode'
 
-const CARD_W = 863
-const CARD_H = 1217
+const CARD_W = 889
+const CARD_H = 1921
 
 interface FanData {
   fan_id: string
@@ -24,6 +24,8 @@ export default function TarjetaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [cardBlob, setCardBlob] = useState<Blob | null>(null)
 
   useEffect(() => {
     setScale(Math.min(1, (window.innerWidth - 32) / CARD_W))
@@ -37,7 +39,7 @@ export default function TarjetaPage() {
 
         const qr = await QRCode.toDataURL(
           `${window.location.origin}/checkin/${fanId}`,
-          { width: 209, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
+          { width: 409, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
         )
         setQrDataUrl(qr)
       } catch (e) {
@@ -49,49 +51,98 @@ export default function TarjetaPage() {
     load()
   }, [fanId])
 
-  async function getCanvas() {
-    const { default: html2canvas } = await import('html2canvas')
-    const el = document.getElementById('fan-card')
-    if (!el) throw new Error('No se encontró la tarjeta')
-    return html2canvas(el, { useCORS: true, scale: 1, backgroundColor: null })
-  }
-
-  async function handleDownload() {
-    setSaving(true)
-    try {
-      const canvas = await getCanvas()
-      const a = document.createElement('a')
-      a.download = `niner-empire-${fan?.nombre ?? 'tarjeta'}.png`
-      a.href = canvas.toDataURL('image/png')
-      a.click()
-    } finally {
-      setSaving(false)
+  // Se genera la imagen de la tarjeta en cuanto está lista, en vez de esperar
+  // al clic del usuario: navigator.share() en iOS Safari solo funciona si se
+  // llama casi de inmediato tras el gesto del usuario, y renderizar con
+  // html2canvas en ese momento tarda demasiado y "expira" ese permiso.
+  useEffect(() => {
+    if (!fan || !qrDataUrl) return
+    let cancelled = false
+    const timer = setTimeout(() => {
+      getCardBlob()
+        .then((blob) => {
+          if (!cancelled) setCardBlob(blob)
+        })
+        .catch(() => {
+          // si falla, se reintentará al hacer clic en los botones
+        })
+    }, 400)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
     }
+  }, [fan, qrDataUrl])
+
+  async function waitForImages(el: HTMLElement) {
+    const imgs = Array.from(el.querySelectorAll('img'))
+    await Promise.all(
+      imgs.map((img) =>
+        img.complete && img.naturalWidth > 0
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              img.addEventListener('load', () => resolve(), { once: true })
+              img.addEventListener('error', () => resolve(), { once: true })
+            })
+      )
+    )
   }
 
-  async function handleSaveToPhotos() {
+  async function getCardBlob() {
+    const { default: html2canvas } = await import('html2canvas')
+    // Se captura la copia oculta a tamaño real (no la vista previa, que está
+    // reducida con CSS transform: scale() para caber en pantalla — capturarla
+    // directamente producía una imagen deformada/borrosa en móvil).
+    const el = document.getElementById('fan-card-capture')
+    if (!el) throw new Error('No se encontró la tarjeta')
+    await waitForImages(el)
+    const canvas = await html2canvas(el, { useCORS: true, scale: 2, backgroundColor: null })
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
+    if (!blob) throw new Error('No se pudo generar la imagen de la tarjeta')
+    return blob
+  }
+
+  // En móvil (sobre todo iOS Safari) el atributo download de un <a> no siempre
+  // guarda el archivo, así que se intenta primero con el share sheet nativo.
+  // Si el share falla (p. ej. se perdió la activación del gesto), se cae de
+  // inmediato a la descarga directa dentro del mismo clic.
+  async function shareOrDownload(filename: string, shareTitle: string) {
     setSaving(true)
+    setSaveError('')
     try {
-      const canvas = await getCanvas()
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), 'image/png')
-      )
-      const file = new File([blob], 'tarjeta-niner-empire.png', { type: 'image/png' })
+      const blob = cardBlob ?? (await getCardBlob())
+      const file = new File([blob], filename, { type: 'image/png' })
 
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Mi Tarjeta Niner Empire México' })
-      } else {
-        // Fallback para desktop
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.download = 'tarjeta-niner-empire.png'
-        a.href = url
-        a.click()
-        URL.revokeObjectURL(url)
+        try {
+          await navigator.share({ files: [file], title: shareTitle })
+          return
+        } catch (shareErr) {
+          if (shareErr instanceof Error && shareErr.name === 'AbortError') return // usuario canceló el share sheet
+          // el share falló (p. ej. activación de usuario expirada): sigue con descarga directa
+        }
       }
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.download = filename
+      a.href = url
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 10000)
+    } catch {
+      setSaveError('No se pudo guardar la tarjeta. Intenta de nuevo o toma una captura de pantalla.')
     } finally {
       setSaving(false)
     }
+  }
+
+  function handleDownload() {
+    return shareOrDownload(`niner-empire-${fan?.nombre ?? 'tarjeta'}.png`, 'Mi Tarjeta Niner Empire México')
+  }
+
+  function handleSaveToPhotos() {
+    return shareOrDownload('tarjeta-niner-empire.png', 'Mi Tarjeta Niner Empire México')
   }
 
   if (loading) {
@@ -132,6 +183,7 @@ export default function TarjetaPage() {
       >
         <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${CARD_W}px`, height: `${CARD_H}px` }}>
           <FanCard
+            id="fan-card-preview"
             nombre={fan.nombre}
             fanId={fan.fan_id}
             memberNumber={fan.member_number}
@@ -139,6 +191,18 @@ export default function TarjetaPage() {
             qrDataUrl={qrDataUrl}
           />
         </div>
+      </div>
+
+      {/* Copia oculta a tamaño real, usada solo para generar la imagen a descargar/compartir */}
+      <div style={{ position: 'fixed', top: 0, left: '-99999px' }} aria-hidden="true">
+        <FanCard
+          id="fan-card-capture"
+          nombre={fan.nombre}
+          fanId={fan.fan_id}
+          memberNumber={fan.member_number}
+          photoUrl={fan.foto_url}
+          qrDataUrl={qrDataUrl}
+        />
       </div>
 
       {/* Botones */}
@@ -170,6 +234,13 @@ export default function TarjetaPage() {
           {saving ? 'Guardando...' : 'Descargar'}
         </button>
       </div>
+
+      {saveError && (
+        <p role="alert" className="mt-4 flex items-center gap-2 text-red-400 text-sm font-bold text-center max-w-xs">
+          <WarningIcon size={18} className="shrink-0" />
+          {saveError}
+        </p>
+      )}
 
       <p className="mt-6 text-gray-400 text-sm text-center">
         Muestra el QR en cada visita al club para acumular puntos

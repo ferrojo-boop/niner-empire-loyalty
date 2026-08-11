@@ -3,13 +3,14 @@
 import { CheckIcon } from './icons'
 
 interface ProgressBarProps {
-  currentStep: 1 | 2 | 3
+  currentStep: 1 | 2 | 3 | 4
 }
 
 const steps = [
   { number: 1, label: 'Tus datos' },
   { number: 2, label: 'Trivia' },
   { number: 3, label: 'Tu foto' },
+  { number: 4, label: 'Resumen' },
 ]
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {

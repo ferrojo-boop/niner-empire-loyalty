@@ -7,11 +7,12 @@ describe('ProgressBar', () => {
     expect(screen.getByText('Tus datos')).toBeInTheDocument()
     expect(screen.getByText('Trivia')).toBeInTheDocument()
     expect(screen.getByText('Tu foto')).toBeInTheDocument()
+    expect(screen.getByText('Resumen')).toBeInTheDocument()
   })
 
-  it('renders 3 step indicators', () => {
+  it('renders 4 step indicators', () => {
     render(<ProgressBar currentStep={2} />)
     const steps = screen.getAllByRole('listitem')
-    expect(steps).toHaveLength(3)
+    expect(steps).toHaveLength(4)
   })
 })

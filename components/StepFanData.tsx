@@ -11,12 +11,16 @@ interface StepFanDataProps {
 const currentYear = new Date().getFullYear()
 
 export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
-  const isValid = data.nombre.trim() !== '' && data.email.trim() !== '' && data.fanDesde !== ''
+  const isValid =
+    data.nombre.trim() !== '' &&
+    data.email.trim() !== '' &&
+    data.whatsapp.trim() !== '' &&
+    data.fanDesde !== ''
 
   return (
     <div className="flex flex-col gap-5">
       <h2 className="text-2xl font-black text-[var(--niners-cream)] text-center">
-        ¡Regístrate como Fan!
+        ¡Obtén tu membresía como Fan!
       </h2>
 
       <div className="flex flex-col gap-1">
@@ -52,15 +56,13 @@ export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="whatsapp" className="text-sm font-bold text-[var(--niners-cream)] flex items-center gap-2">
-          WhatsApp
-          <span className="text-xs bg-[var(--niners-gold)] text-black px-2 py-0.5 rounded-full font-black">
-            RECOMENDADO
-          </span>
+        <label htmlFor="whatsapp" className="text-sm font-bold text-[var(--niners-cream)]">
+          WhatsApp *
         </label>
         <input
           id="whatsapp"
           type="tel"
+          required
           autoComplete="tel"
           value={data.whatsapp}
           onChange={(e) => onChange({ whatsapp: e.target.value })}
@@ -101,7 +103,7 @@ export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
       </button>
       {!isValid && (
         <p id="fan-data-hint" className="text-xs text-[var(--niners-cream)]/80 text-center -mt-3">
-          Completa nombre, correo y año para continuar
+          Completa nombre, correo, WhatsApp y año para continuar
         </p>
       )}
     </div>

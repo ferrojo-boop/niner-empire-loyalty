@@ -1,6 +1,7 @@
 'use client'
 
 interface FanCardProps {
+  id?: string
   nombre: string
   fanId: string
   memberNumber: number
@@ -8,25 +9,22 @@ interface FanCardProps {
   qrDataUrl: string
 }
 
-export function FanCard({ nombre, memberNumber, photoUrl, qrDataUrl }: FanCardProps) {
-  const memberStr = String(memberNumber).padStart(4, '0')
+export function FanCard({ id = 'fan-card', nombre, memberNumber, photoUrl, qrDataUrl }: FanCardProps) {
+  const memberStr = `NE - MX - ${String(memberNumber).padStart(3, '0')}`
 
   return (
     <div
-      id="fan-card"
+      id={id}
       style={{
-        width: '863px',
-        height: '1217px',
+        width: '889px',
+        height: '1921px',
         position: 'relative',
-        backgroundImage: 'url(/Tarjeta.png)',
-        backgroundSize: '100% 100%',
-        backgroundRepeat: 'no-repeat',
         fontFamily: 'Inter, Arial, sans-serif',
         overflow: 'hidden',
         flexShrink: 0,
       }}
     >
-      {/* Foto circular */}
+      {/* Foto circular (queda detrás del logo SF y de "Faithful") */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photoUrl}
@@ -34,32 +32,15 @@ export function FanCard({ nombre, memberNumber, photoUrl, qrDataUrl }: FanCardPr
         crossOrigin="anonymous"
         style={{
           position: 'absolute',
-          top: '134px',
-          left: '302px',
-          width: '259px',
-          height: '259px',
+          top: '579px',
+          left: '162px',
+          width: '563px',
+          height: '563px',
           borderRadius: '50%',
           objectFit: 'cover',
-          border: '6px solid #B3995D',
+          zIndex: 1,
         }}
       />
-
-      {/* Nombre */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '425px',
-          left: '0',
-          width: '863px',
-          textAlign: 'center',
-          color: '#FFFFFF',
-          fontSize: '34px',
-          fontWeight: '400',
-          letterSpacing: '0.5px',
-        }}
-      >
-        {nombre}
-      </div>
 
       {/* QR Code */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -68,28 +49,74 @@ export function FanCard({ nombre, memberNumber, photoUrl, qrDataUrl }: FanCardPr
         alt="QR"
         style={{
           position: 'absolute',
-          top: '500px',
-          left: '327px',
-          width: '209px',
-          height: '209px',
+          top: '1169px',
+          left: '239px',
+          width: '409px',
+          height: '409px',
+          zIndex: 1,
         }}
       />
+
+      {/* Plantilla con recortes transparentes sobre la foto y el QR */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/MembresiaDigital.png"
+        alt=""
+        crossOrigin="anonymous"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '889px',
+          height: '1921px',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Nombre */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1627px',
+          left: '125px',
+          width: '644px',
+          height: '89px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#000000',
+          fontSize: '40px',
+          fontWeight: 800,
+          letterSpacing: '1px',
+          textTransform: 'uppercase',
+          textAlign: 'center',
+          zIndex: 3,
+        }}
+      >
+        {nombre}
+      </div>
 
       {/* Número de miembro */}
       <div
         style={{
           position: 'absolute',
-          top: '870px',
-          right: '62px',
-          color: '#B3995D',
-          fontSize: '20px',
-          fontWeight: '700',
-          textAlign: 'right',
-          lineHeight: '1.4',
+          top: '1751px',
+          left: '126px',
+          width: '642px',
+          height: '89px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#000000',
+          fontSize: '40px',
+          fontWeight: 800,
+          letterSpacing: '1px',
+          textAlign: 'center',
+          zIndex: 3,
         }}
       >
-        <div>Miembro</div>
-        <div>{memberStr}</div>
+        {memberStr}
       </div>
     </div>
   )

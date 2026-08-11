@@ -7,7 +7,7 @@ import { ProgressBar } from './ProgressBar'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
-import { WarningIcon } from './icons'
+import { StepSummary } from './StepSummary'
 
 const initialData: FanFormData = {
   nombre: '',
@@ -21,6 +21,7 @@ const initialData: FanFormData = {
 export function FanForm() {
   const router = useRouter()
   const [step, setStep] = useState<FormStep>(1)
+  const [triviaDone, setTriviaDone] = useState(false)
   const [data, setData] = useState<FanFormData>(initialData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,40 +69,38 @@ export function FanForm() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex flex-col items-center mb-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/NinerEmpireMX.png"
-          alt="Niner Empire México"
-          className="w-52 h-auto mb-2"
-        />
-        <p className="text-[var(--niners-gold-light)] text-sm font-semibold tracking-widest uppercase">
-          Loyalty Program
-        </p>
-      </div>
+    <div className="form-card">
+      <h2>Obtén tu membresía digital sin costo</h2>
+      <p className="lead">Regístrate en menos de 2 minutos y genera tu tarjeta digital de fan.</p>
 
       <ProgressBar currentStep={step} />
 
-      <div className="bg-[var(--niners-red)] rounded-2xl p-6 border-2 border-[var(--niners-gold)] shadow-2xl">
-        {step === 1 && (
-          <StepFanData data={data} onChange={handleChange} onNext={() => setStep(2)} />
-        )}
-        {step === 2 && (
-          <StepTrivia onCorrect={() => setStep(3)} />
-        )}
-        {step === 3 && (
-          <StepCamera data={data} onChange={handleChange} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
-        )}
-
-        {error && (
-          <p role="alert" className="mt-4 flex items-center justify-center gap-2 text-[var(--niners-cream)] bg-black/30 rounded-lg px-4 py-2 text-sm font-bold text-center">
-            <WarningIcon size={18} className="shrink-0" />
-            {error}
-          </p>
-        )}
-      </div>
+      {step === 1 && (
+        <StepFanData
+          data={data}
+          onChange={handleChange}
+          onNext={() => setStep(triviaDone ? 4 : 2)}
+        />
+      )}
+      {step === 2 && (
+        <StepTrivia
+          onCorrect={() => {
+            setTriviaDone(true)
+            setStep(3)
+          }}
+        />
+      )}
+      {step === 3 && <StepCamera data={data} onChange={handleChange} onNext={() => setStep(4)} />}
+      {step === 4 && (
+        <StepSummary
+          data={data}
+          onEditData={() => setStep(1)}
+          onEditPhoto={() => setStep(3)}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={error}
+        />
+      )}
     </div>
   )
 }

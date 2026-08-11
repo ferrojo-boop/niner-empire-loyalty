@@ -60,7 +60,7 @@ export default function CheckinPage() {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center bg-[#AA0000] gap-6 px-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/NinerEmpireMX.png" alt="Niner Empire México" className="w-40 h-auto" />
+        <img src="/NinerEmpireMXok.png" alt="Niner Empire México" className="w-32 h-auto" />
         <WarningIcon size={56} className="text-white" />
         <h1 className="text-white text-3xl font-black text-center tracking-wide">
           Visita ya registrada
@@ -81,7 +81,7 @@ export default function CheckinPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center bg-[#AA0000] gap-6 px-6">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/NinerEmpireMX.png" alt="Niner Empire México" className="w-40 h-auto" />
+      <img src="/NinerEmpireMXok.png" alt="Niner Empire México" className="w-32 h-auto" />
       <CheckCircleIcon size={80} className="text-white" />
       <h1 className="text-white text-4xl font-black text-center tracking-wide uppercase">
         ¡Visita Registrada!

@@ -82,6 +82,64 @@ export function CheckCircleIcon({ size = 24, className }: IconProps) {
   )
 }
 
+export function EditIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />
+      <path d="M14 6l4 4" />
+    </svg>
+  )
+}
+
+export function MenuIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M3 6h18M3 12h18M3 18h18" />
+    </svg>
+  )
+}
+
+export function StarIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M12 2.5 14.9 9l7 .6-5.3 4.6 1.6 6.8L12 17.6 5.8 21l1.6-6.8L2.1 9.6l7-.6Z" />
+    </svg>
+  )
+}
+
+export function PinIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </svg>
+  )
+}
+
+export function ArrowUpRightIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M7 17 17 7M9 7h8v8" />
+    </svg>
+  )
+}
+
+export function ChevronLeftIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  )
+}
+
 export function XCircleIcon({ size = 24, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>

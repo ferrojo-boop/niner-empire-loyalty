@@ -7,4 +7,4 @@ export interface FanFormData {
   photoPreviewUrl: string | null
 }
 
-export type FormStep = 1 | 2 | 3
+export type FormStep = 1 | 2 | 3 | 4

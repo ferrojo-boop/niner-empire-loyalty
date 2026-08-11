@@ -14,6 +14,10 @@
   --niners-cream: #F0DFC0;
   --niners-black: #1A1A1A;
   --niners-white: #FFFFFF;
+  --niners-red-deep: #5C0000;
+  --niners-ink: #150B09;
+  --niners-ink-2: #1F110D;
+  --font-display: var(--font-anton), Impact, 'Arial Narrow', sans-serif;
 }
 
 body {

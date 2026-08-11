@@ -1,19 +1,20 @@
-import { FanForm } from '@/components/FanForm'
+import './landing.css'
+import { SiteNav } from '@/components/SiteNav'
+import { Hero } from '@/components/Hero'
+import { Gallery } from '@/components/Gallery'
+import { Venue } from '@/components/Venue'
+import { Schedule } from '@/components/Schedule'
+import { SiteFooter } from '@/components/SiteFooter'
 
 export default function Home() {
   return (
-    <main className="relative min-h-dvh flex items-center justify-center py-8 bg-black">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/stadium.webp')" }}
-      />
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/70" />
-      {/* Content */}
-      <div className="relative z-10 w-full">
-        <FanForm />
-      </div>
-    </main>
+    <div className="landing">
+      <SiteNav />
+      <Hero />
+      <Gallery />
+      <Venue />
+      <Schedule />
+      <SiteFooter />
+    </div>
   )
 }

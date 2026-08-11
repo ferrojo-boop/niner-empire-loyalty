@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Anton } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '600', '700', '900'] })
+const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton' })
 
 export const metadata: Metadata = {
   title: 'Niner Empire Loyalty',
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} ${anton.variable}`}>{children}</body>
     </html>
   )
 }

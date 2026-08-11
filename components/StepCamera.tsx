@@ -2,16 +2,15 @@
 
 import { useRef } from 'react'
 import { FanFormData } from '@/lib/types'
-import { CameraIcon, SpinnerIcon } from './icons'
+import { CameraIcon } from './icons'
 
 interface StepCameraProps {
   data: FanFormData
   onChange: (partial: Partial<FanFormData>) => void
-  onSubmit: () => void
-  isSubmitting: boolean
+  onNext: () => void
 }
 
-export function StepCamera({ data, onChange, onSubmit, isSubmitting }: StepCameraProps) {
+export function StepCamera({ data, onChange, onNext }: StepCameraProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,9 +64,8 @@ export function StepCamera({ data, onChange, onSubmit, isSubmitting }: StepCamer
       )}
 
       <button
-        onClick={onSubmit}
-        disabled={!data.photoFile || isSubmitting}
-        aria-live="polite"
+        onClick={onNext}
+        disabled={!data.photoFile}
         className="w-full py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all
           flex items-center justify-center gap-2
           bg-[var(--niners-gold)] text-black border-2 border-[var(--niners-gold)]
@@ -75,14 +73,7 @@ export function StepCamera({ data, onChange, onSubmit, isSubmitting }: StepCamer
           hover:bg-[var(--niners-gold-light)] enabled:cursor-pointer
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--niners-red)]"
       >
-        {isSubmitting ? (
-          <>
-            <SpinnerIcon size={20} />
-            Generando tu tarjeta...
-          </>
-        ) : (
-          'Generar mi tarjeta'
-        )}
+        Revisar mis datos →
       </button>
     </div>
   )

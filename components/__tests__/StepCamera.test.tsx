@@ -9,22 +9,22 @@ const defaultData: FanFormData = {
 
 describe('StepCamera', () => {
   it('shows camera capture button when no photo taken', () => {
-    render(<StepCamera data={defaultData} onChange={jest.fn()} onSubmit={jest.fn()} isSubmitting={false} />)
+    render(<StepCamera data={defaultData} onChange={jest.fn()} onNext={jest.fn()} />)
     expect(screen.getByText(/tomar foto/i)).toBeInTheDocument()
   })
 
-  it('disables submit button when no photo', () => {
-    render(<StepCamera data={defaultData} onChange={jest.fn()} onSubmit={jest.fn()} isSubmitting={false} />)
-    expect(screen.getByRole('button', { name: /generar/i })).toBeDisabled()
+  it('disables next button when no photo', () => {
+    render(<StepCamera data={defaultData} onChange={jest.fn()} onNext={jest.fn()} />)
+    expect(screen.getByRole('button', { name: /revisar/i })).toBeDisabled()
   })
 
-  it('shows submitting state', () => {
+  it('enables next button once a photo is taken', () => {
     const dataWithPhoto: FanFormData = {
       ...defaultData,
       photoFile: new File([''], 'photo.jpg'),
       photoPreviewUrl: 'blob:test',
     }
-    render(<StepCamera data={dataWithPhoto} onChange={jest.fn()} onSubmit={jest.fn()} isSubmitting={true} />)
-    expect(screen.getByText(/generando/i)).toBeInTheDocument()
+    render(<StepCamera data={dataWithPhoto} onChange={jest.fn()} onNext={jest.fn()} />)
+    expect(screen.getByRole('button', { name: /revisar/i })).toBeEnabled()
   })
 })
