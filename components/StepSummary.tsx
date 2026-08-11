@@ -43,6 +43,7 @@ export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitt
         <SummaryRow label="Correo electrónico" value={data.email} />
         <SummaryRow label="WhatsApp" value={data.whatsapp} />
         <SummaryRow label="Fan desde" value={String(data.fanDesde)} />
+        <SummaryRow label="Jugador favorito" value={data.jugadorFavorito} />
 
         <button
           onClick={onEditData}

@@ -24,7 +24,8 @@ export function FanCard({ id = 'fan-card', nombre, memberNumber, photoUrl, qrDat
         flexShrink: 0,
       }}
     >
-      {/* Foto circular (queda detrás del logo SF y de "Faithful") */}
+      {/* Foto circular. Se dibuja unos px más grande que el recorte de la
+          plantilla para que el aro dorado tape el borde y no quede rendija. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photoUrl}
@@ -32,10 +33,10 @@ export function FanCard({ id = 'fan-card', nombre, memberNumber, photoUrl, qrDat
         crossOrigin="anonymous"
         style={{
           position: 'absolute',
-          top: '579px',
-          left: '162px',
-          width: '563px',
-          height: '563px',
+          top: '558px',
+          left: '218px',
+          width: '450px',
+          height: '450px',
           borderRadius: '50%',
           objectFit: 'cover',
           zIndex: 1,
@@ -49,8 +50,8 @@ export function FanCard({ id = 'fan-card', nombre, memberNumber, photoUrl, qrDat
         alt="QR"
         style={{
           position: 'absolute',
-          top: '1169px',
-          left: '239px',
+          top: '1168px',
+          left: '238px',
           width: '409px',
           height: '409px',
           zIndex: 1,
@@ -60,7 +61,7 @@ export function FanCard({ id = 'fan-card', nombre, memberNumber, photoUrl, qrDat
       {/* Plantilla con recortes transparentes sobre la foto y el QR */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/MembresiaDigital.png"
+        src="/MembresiaDigitalFinal.png"
         alt=""
         crossOrigin="anonymous"
         style={{

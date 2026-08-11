@@ -3,7 +3,8 @@ import { StepFanData } from '../StepFanData'
 import { FanFormData } from '@/lib/types'
 
 const defaultData: FanFormData = {
-  nombre: '', email: '', whatsapp: '', fanDesde: '', photoFile: null, photoPreviewUrl: null,
+  nombre: '', email: '', whatsapp: '', fanDesde: '',
+  jugadorFavorito: '', photoFile: null, photoPreviewUrl: null,
 }
 
 describe('StepFanData', () => {

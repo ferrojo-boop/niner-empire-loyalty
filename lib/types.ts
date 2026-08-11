@@ -3,6 +3,7 @@ export interface FanFormData {
   email: string
   whatsapp: string
   fanDesde: number | ''
+  jugadorFavorito: string
   photoFile: File | null
   photoPreviewUrl: string | null
 }

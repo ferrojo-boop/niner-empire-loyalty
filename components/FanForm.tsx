@@ -13,6 +13,7 @@ const initialData: FanFormData = {
   email: '',
   whatsapp: '',
   fanDesde: '',
+  jugadorFavorito: '',
   photoFile: null,
   photoPreviewUrl: null,
 }
@@ -53,6 +54,7 @@ export function FanForm() {
           email: data.email,
           whatsapp: data.whatsapp,
           fanDesde: data.fanDesde,
+          jugadorFavorito: data.jugadorFavorito,
           urlFoto: url,
         }),
       })
@@ -81,6 +83,8 @@ export function FanForm() {
       )}
       {step === 2 && (
         <StepTrivia
+          data={data}
+          onChange={handleChange}
           onCorrect={() => {
             setTriviaDone(true)
             setStep(3)
@@ -98,6 +102,11 @@ export function FanForm() {
           error={error}
         />
       )}
+
+      <p className="recover-link">
+        ¿Extraviaste tu tarjeta digital?{' '}
+        <a href="/recuperar">Haz clic aquí para recuperarla</a>
+      </p>
     </div>
   )
 }

@@ -5,6 +5,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { nombre, email, fanDesde, urlFoto } = body
   const whatsapp = body.whatsapp ?? ''
+  const jugadorFavorito = body.jugadorFavorito ?? ''
 
   if (!nombre || !email || !fanDesde || !urlFoto) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -21,6 +22,7 @@ export async function POST(req: NextRequest) {
       email,
       whatsapp: whatsapp || null,
       fan_desde: fanDesde,
+      jugador_favorito: jugadorFavorito || null,
       foto_url: urlFoto,
       ano_registro: new Date().getFullYear(),
     })

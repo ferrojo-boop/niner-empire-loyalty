@@ -4,7 +4,8 @@ import { FanFormData } from '@/lib/types'
 
 const defaultData: FanFormData = {
   nombre: 'Fernando', email: 'fer@f.com', whatsapp: '',
-  fanDesde: 1995, photoFile: null, photoPreviewUrl: null,
+  fanDesde: 1995, jugadorFavorito: 'Joe Montana',
+  photoFile: null, photoPreviewUrl: null,
 }
 
 describe('StepCamera', () => {
