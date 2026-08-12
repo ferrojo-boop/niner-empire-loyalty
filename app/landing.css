@@ -146,25 +146,47 @@
   width: 173px; /* -10% adicional respecto a 192px, solo escritorio */
   filter: drop-shadow(0 18px 30px rgba(0,0,0,0.45));
 }
+/* Título del hero. Las tres líneas son Anton a distinta escala; los factores
+   (0.539 / 1 / 0.784 de --title) y las distancias entre bases salen de medir
+   el comp del diseño, así que se mantienen proporcionales a cualquier tamaño.
+   --title manda: todo lo demás se calcula a partir de él. */
 .hero-tagline {
+  /* El tope lo pone el ancho de la columna: "Niner Empire" mide ~5.1 veces
+     --title, y la columna del hero se queda en 590px desde los 1180px. */
+  --title: clamp(4.5rem, 8.2vw, 6.8rem);
   font-family: var(--font-display);
   text-transform: uppercase;
-  line-height: 0.94;
+  line-height: 1;
   letter-spacing: 0.01em;
+  /* Sombra en unidades de --title (no em) para que sea la misma en las tres
+     líneas pese a que cada una tiene su propio font-size. */
+  text-shadow:
+    calc(var(--title) * 0.054) calc(var(--title) * 0.095)
+    calc(var(--title) * 0.086) rgba(0, 0, 0, 0.55);
 }
 .hero-tagline .line1 {
   display: block;
-  font-size: clamp(2.6rem, 5.2vw, 4.4rem);
+  font-size: calc(var(--title) * 0.539);
   color: var(--niners-white);
-  text-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
 .hero-tagline .line2 {
   display: block;
-  font-size: clamp(2.6rem, 5.2vw, 4.4rem);
-  color: var(--niners-gold-light);
-  text-shadow: 0 3px 0 rgba(0,0,0,0.25);
-  margin-top: 2px;
+  font-size: var(--title);
+  margin-top: calc(var(--title) * -0.018);
 }
+.hero-tagline .line3 {
+  display: block;
+  font-size: calc(var(--title) * 0.784);
+  margin-top: calc(var(--title) * -0.043);
+  /* Hueca: el relleno transparente deja pasar el fondo, y el text-shadow
+     sigue dibujando la silueta sólida detrás, como en el diseño. */
+  color: transparent;
+  -webkit-text-stroke: calc(var(--title) * 0.022) var(--niners-white);
+}
+/* Rojo propio del título, no --niners-red: sobre la foto del hero el rojo de
+   marca se apaga, y este es el del comp. */
+.hero-tagline .w-niner { color: #AF1918; }
+.hero-tagline .w-empire { color: var(--niners-gold-light); }
 .hero-sub {
   font-size: 1.05rem;
   font-weight: 600;
@@ -758,6 +780,9 @@
 @media (max-width: 880px) {
   .hero-inner { grid-template-columns: 1fr; }
   .hero-badge-col { align-items: center; text-align: center; }
+  /* A una sola columna el título dispone de todo el ancho, así que crece
+     más rápido con el viewport que en escritorio. */
+  .hero-tagline { --title: clamp(3rem, 15.5vw, 6rem); }
   .hero-badge-col img.crest { width: 152px; }
   .hero-sub { max-width: none; }
   .game-row { grid-template-columns: 36px 56px 1fr auto; gap: 10px; padding: 14px 12px; }

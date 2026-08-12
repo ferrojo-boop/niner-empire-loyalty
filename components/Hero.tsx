@@ -16,7 +16,10 @@ export function Hero() {
           />
           <div className="hero-tagline">
             <span className="line1">Únete a la Familia</span>
-            <span className="line2">Niner Empire México</span>
+            <span className="line2">
+              <span className="w-niner">Niner</span> <span className="w-empire">Empire</span>
+            </span>
+            <span className="line3">México</span>
           </div>
           <p className="hero-sub">
             Comunidad de fans de los San Francisco 49ers en CDMX. Con tu membresía accede a
