@@ -37,3 +37,13 @@ next-env.d.ts
 
 # originales sin comprimir de la galería (no se despliegan)
 /originales-galeria/
+
+# ajustes personales de Claude Code: son de cada máquina y guardan URLs firmadas
+.claude/settings.local.json
+
+# archivos fuente de diseño: pesan de más y el sitio no los sirve
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/*.pdf
