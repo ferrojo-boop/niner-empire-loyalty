@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './privacidad.css'
 
 // Datos del responsable. Cámbialos aquí y se actualizan en todo el aviso.
-const CONTACTO = 'privacidad@ninerempiremexico.mx'
+const CONTACTO = 'ninerempiremx@gmail.com'
 const DOMICILIO = 'Ciudad de México, México'
 const ACTUALIZACION = '11 de agosto de 2026'
 
@@ -228,10 +228,6 @@ export default function PrivacidadPage() {
             Si cambiamos la forma en que tratamos tus datos, actualizaremos este aviso en esta misma
             página y modificaremos la fecha de la parte superior. Te recomendamos revisarla de vez
             en cuando.
-          </p>
-          <p>
-            Si consideras que tu derecho a la protección de datos personales fue vulnerado, puedes
-            acudir a la autoridad competente en México en materia de protección de datos personales.
           </p>
         </section>
 
