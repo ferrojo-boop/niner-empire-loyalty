@@ -5,34 +5,109 @@ import { ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons'
 
 const SLIDES = [
   {
-    src: '/NEMX2.jpeg',
-    alt: 'Decenas de miembros de Niner Empire México reunidos con jerseys de los 49ers en un watch party',
-    caption: 'Watch party de la Faithful mexicana',
+    src: '/IMG_2206.webp',
+    alt: 'Decenas de miembros de Niner Empire México posando juntos en el escenario del watch party',
+    caption: 'La foto de familia del Empire',
   },
   {
-    src: '/NEMX7.jpeg',
-    alt: 'Dos miembros de espaldas con capas de Niner Empire México chocando los guantes',
+    src: '/IMG_2201.webp',
+    alt: 'Dos miembros con jerseys 13 y 23 de los 49ers marcando bíceps en el watch party',
+    caption: 'Los del 13 y el 23',
+  },
+  {
+    src: '/IMG_2202.webp',
+    alt: 'Pareja abrazada con jerseys rojos 23 y 80 de los San Francisco 49ers',
+    caption: 'Pareja Faithful',
+  },
+  {
+    src: '/IMG_2203.webp',
+    alt: 'Miembro recibiendo un beso en la mejilla, ambos con jerseys negros de Niner Empire México',
+    caption: 'Amor Faithful',
+  },
+  {
+    src: '/IMG_2204.webp',
+    alt: 'Tres miembros con dedos de hule de los 49ers levantados alrededor de una mesa',
+    caption: 'Dedos de hule y buena vibra',
+  },
+  {
+    src: '/IMG_2205.webp',
+    alt: 'Tres miembros posando con jerseys 13 y 23 de los 49ers en el watch party',
+    caption: 'En familia con los colores',
+  },
+  {
+    src: '/IMG_2207.webp',
+    alt: 'Miembro con máscara de calavera de papel en rojo y dorado, guantes de hule y casco de los 49ers',
+    caption: 'La calavera del Empire',
+  },
+  {
+    src: '/IMG_2208.webp',
+    alt: 'Pareja sonriendo con jersey 52 y sudadera roja de los 49ers',
+    caption: 'Sonrisas en el watch party',
+  },
+  {
+    src: '/IMG_2209.webp',
+    alt: 'Miembro detrás del bombo de la porra con el escudo de Niner Empire México, rodeado de banderines',
+    caption: 'El tambor que no para',
+  },
+  {
+    src: '/IMG_2210.webp',
+    alt: 'Acercamiento al bombo con el logo de los 49ers, el escudo de Niner Empire México y sus baquetas',
+    caption: 'El tambor oficial de la porra',
+  },
+  {
+    src: '/IMG_2211.webp',
+    alt: 'Miembro con máscara de calavera de papel, jersey 44 y puños de hule rojos frente a los banderines',
+    caption: 'Puños listos para el kickoff',
+  },
+  {
+    src: '/IMG_2212.webp',
+    alt: 'Parche bordado de Niner Empire México con el puente Golden Gate al fondo',
+    caption: 'El parche frente al Golden Gate',
+  },
+  {
+    src: '/IMG_2213.webp',
+    alt: 'Tres miembros con playeras de Niner Empire México en una selfie frente al puente Golden Gate',
+    caption: 'De México al Golden Gate',
+  },
+  {
+    src: '/IMG_2215.webp',
+    alt: 'Dos miembros de espaldas con las capas de Niner Empire México chocando los guantes',
     caption: 'Las capas del Empire',
   },
   {
-    src: '/NEMX6.jpeg',
-    alt: 'Fan con penacho azteca y atuendo prehispánico animando desde la tribuna del estadio',
-    caption: 'Orgullo azteca en la tribuna',
+    src: '/IMG_2216.webp',
+    alt: 'Miembro con máscara de calavera levantando un trofeo junto a los estandartes de Niner Empire México',
+    caption: 'Levantando el trofeo',
   },
   {
-    src: '/NEMX5.jpeg',
-    alt: 'Grupo de miembros sosteniendo una bandera de los San Francisco 49ers junto a estandartes del club',
-    caption: 'La bandera SF en alto',
+    src: '/IMG_2220.webp',
+    alt: 'Cuatro miembros en una selfie con puños de hule de Niner Empire México en alto',
+    caption: 'Puños arriba, cheve en mano',
   },
   {
-    src: '/NEMX3.jpeg',
-    alt: 'Miembro de espaldas con la capa de Niner Empire México frente a un estadio lleno',
-    caption: 'Los colores en el estadio',
+    src: '/IMG_2221.webp',
+    alt: 'Tres miembros abrazados con jerseys y playeras de Niner Empire y los 49ers',
+    caption: 'Abrazo de la Faithful',
   },
   {
-    src: '/NEMX4.jpeg',
-    alt: 'Fan con máscara de luchador dorada y jersey número 13 de los 49ers festejando',
-    caption: 'Máscara y jersey, estilo mexicano',
+    src: '/IMG_2222.webp',
+    alt: 'Grupo de miembros en una mesa del watch party con jerseys de los 49ers',
+    caption: 'La mesa de las Faithful',
+  },
+  {
+    src: '/IMG_2223.webp',
+    alt: 'Vista amplia de la sede llena de miembros bajo banderines de los 49ers y Niner Empire México',
+    caption: 'Sede llena en día de juego',
+  },
+  {
+    src: '/IMG_2224.webp',
+    alt: 'Tres miembros posando frente al estandarte de Niner Empire México',
+    caption: 'Bajo el estandarte del Empire',
+  },
+  {
+    src: '/IMG_2225.webp',
+    alt: 'Miembros siguiendo el partido en la pantalla grande de la sede, rodeados de banderines',
+    caption: 'Todos a la pantalla grande',
   },
   {
     src: '/80years.jpg',
@@ -145,7 +220,12 @@ export function Gallery() {
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={slide.src} alt={slide.alt} />
+                <img
+                  src={slide.src}
+                  alt={slide.alt}
+                  loading={i < 2 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
                 <div className="carousel-cap">{slide.caption}</div>
               </div>
             ))}

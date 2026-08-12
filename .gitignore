@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# originales sin comprimir de la galería (no se despliegan)
+/originales-galeria/
