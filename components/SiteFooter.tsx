@@ -12,6 +12,9 @@ export function SiteFooter() {
         <img src="/INSTAGRAM_NINER_EMPIRE_MEXICO.png" alt="" />
       </a>
       <p>Niner-Empire-México, club de fans de San Francisco 49ers en CDMX</p>
+      <a className="footer-privacy" href="/privacidad">
+        Aviso de Privacidad
+      </a>
     </footer>
   )
 }

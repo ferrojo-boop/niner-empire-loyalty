@@ -55,6 +55,22 @@ export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitt
         </button>
       </div>
 
+      {/* El aviso abre en pestaña nueva a propósito: salir de la página pierde
+          la foto y los datos capturados, que solo viven en memoria. */}
+      <p className="text-xs leading-relaxed text-center text-[var(--niners-cream)]/85 -mb-2">
+        Al generar tu tarjeta aceptas que el club guarde tus datos y tu foto conforme al{' '}
+        <a
+          href="/privacidad"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-bold text-[var(--niners-gold-light)] underline
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--niners-gold-light)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--niners-red)] rounded"
+        >
+          Aviso de Privacidad
+        </a>
+        .
+      </p>
+
       <button
         onClick={onSubmit}
         disabled={isSubmitting}
