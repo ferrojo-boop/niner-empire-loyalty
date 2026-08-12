@@ -26,19 +26,28 @@ export function getSupabaseBrowser(): SupabaseClient {
 }
 
 /**
- * Saca el fanId de lo que traiga el QR. La tarjeta codifica una URL completa
- * (https://dominio/checkin/NEL-123), pero se acepta también el id pelón por si
- * el staff lo teclea a mano.
+ * Convierte lo que el staff escaneó o tecleó en un identificador que el
+ * endpoint de check-in entiende. Acepta tres formas:
+ *
+ *   - La URL completa del QR:  https://dominio/checkin/NEL-1786491329461
+ *   - El folio impreso en la tarjeta:  NE - MX - 009  (o solo 009)
+ *   - El fan_id suelto:  NEL-1786491329461
+ *
+ * El folio es el importante para capturar a mano: es el único número que el
+ * staff puede leer de un vistazo en la tarjeta del socio.
  */
-export function extractFanId(scanned: string): string | null {
+export function extractCardIdentifier(scanned: string): string | null {
   const value = scanned.trim()
   if (!value) return null
 
   const fromUrl = value.match(/\/checkin\/([^/?#\s]+)/i)
   if (fromUrl) return decodeURIComponent(fromUrl[1])
 
-  // Un fanId suelto, tal cual se genera al registrarse.
   if (/^NEL-\d+$/i.test(value)) return value.toUpperCase()
+
+  // Folio de la tarjeta, con o sin el prefijo y con o sin ceros a la izquierda.
+  const folio = value.match(/^(?:ne\s*[-–—]?\s*mx\s*[-–—]?\s*)?0*(\d{1,9})$/i)
+  if (folio) return folio[1]
 
   return null
 }

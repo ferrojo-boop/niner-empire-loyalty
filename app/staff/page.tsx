@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getSupabaseBrowser, extractFanId } from '@/lib/supabaseBrowser'
+import { getSupabaseBrowser, extractCardIdentifier } from '@/lib/supabaseBrowser'
 import { CheckCircleIcon, SpinnerIcon, WarningIcon, XCircleIcon } from '@/components/icons'
 import './staff.css'
 
@@ -264,7 +264,7 @@ function Scanner({ session, onLogout }: { session: Session; onLogout: () => void
         try {
           const codes = await detector.detect(video)
           if (codes.length > 0) {
-            const fanId = extractFanId(codes[0].rawValue ?? '')
+            const fanId = extractCardIdentifier(codes[0].rawValue ?? '')
             if (fanId) {
               await registerVisit(fanId)
             } else {
@@ -289,9 +289,9 @@ function Scanner({ session, onLogout }: { session: Session; onLogout: () => void
 
   function handleManual(e: React.FormEvent) {
     e.preventDefault()
-    const fanId = extractFanId(manualId)
+    const fanId = extractCardIdentifier(manualId)
     if (!fanId) {
-      setError('Escribe un número de tarjeta válido (ej. NEL-1786423774509).')
+      setError('Escribe el folio de la tarjeta, por ejemplo 009 o NE-MX-009.')
       return
     }
     setManualId('')
@@ -335,19 +335,27 @@ function Scanner({ session, onLogout }: { session: Session; onLogout: () => void
         )}
 
         <form className="staff-manual" onSubmit={handleManual}>
-          <label htmlFor="manual-id">O captura el número de tarjeta</label>
+          <label htmlFor="manual-id">Folio de la tarjeta</label>
           <div className="staff-manual-row">
+            {/* Teclado numérico: el staff captura solo los dígitos del folio
+                (NE - MX - 009 → 9). El endpoint igual acepta el folio completo
+                o el fan_id largo si llegara a pegarse. */}
             <input
               id="manual-id"
               type="text"
+              inputMode="numeric"
+              autoComplete="off"
               value={manualId}
               onChange={(e) => setManualId(e.target.value)}
-              placeholder="NEL-1786423774509"
+              placeholder="009"
             />
             <button type="submit" className="staff-btn staff-btn--sm" disabled={registering}>
               Registrar
             </button>
           </div>
+          <span className="staff-hint">
+            Es el número impreso en la tarjeta, debajo del nombre: NE - MX - <b>009</b>
+          </span>
         </form>
 
         {registering && (

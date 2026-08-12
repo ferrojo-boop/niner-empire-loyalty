@@ -183,9 +183,7 @@
   color: transparent;
   -webkit-text-stroke: calc(var(--title) * 0.022) var(--niners-white);
 }
-/* Rojo propio del título, no --niners-red: sobre la foto del hero el rojo de
-   marca se apaga, y este es el del comp. */
-.hero-tagline .w-niner { color: #AF1918; }
+.hero-tagline .w-niner { color: var(--niners-red-brand); }
 .hero-tagline .w-empire { color: var(--niners-gold-light); }
 .hero-sub {
   font-size: 1.05rem;
@@ -591,7 +589,7 @@
 /* ---------- Schedule ---------- */
 .schedule-section {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(170,0,0,0.25), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(175,25,24,0.25), transparent 60%),
     var(--niners-ink-2);
   border-top: 1px solid rgba(179,153,93,0.25);
 }
@@ -693,7 +691,7 @@
 
 /* Local: fondo rojo, texto blanco y dorado */
 .game-row.home {
-  background: var(--niners-red);
+  background: var(--niners-red-brand);
   border-bottom-color: rgba(0,0,0,0.25);
 }
 .game-row.home .wk { color: var(--niners-gold-light); }
@@ -715,13 +713,13 @@
   background: var(--niners-white);
   border-bottom-color: rgba(0,0,0,0.08);
 }
-.game-row.away .wk { color: var(--niners-red-bright); }
-.game-row.away .wk span { color: var(--niners-red); opacity: 0.65; }
-.game-row.away .date { color: var(--niners-red-bright); }
+.game-row.away .wk { color: var(--niners-red-brand); }
+.game-row.away .wk span { color: var(--niners-red-brand); opacity: 0.65; }
+.game-row.away .date { color: var(--niners-red-brand); }
 .game-row.away .date .time { color: #8A6D2E; }
-.game-row.away .opp .name { color: var(--niners-red-bright); }
+.game-row.away .opp .name { color: var(--niners-red-brand); }
 .game-row.away .opp .venue { color: #8A6D2E; opacity: 1; }
-.game-row.away .tag { border-color: var(--niners-red-bright); color: var(--niners-red-bright); background: rgba(170,0,0,0.06); }
+.game-row.away .tag { border-color: var(--niners-red-brand); color: var(--niners-red-brand); background: rgba(175,25,24,0.06); }
 
 .landing-footer {
   display: flex;
@@ -737,15 +735,32 @@
   color: var(--niners-cream);
   opacity: 0.55;
 }
-.footer-ig {
+/* ---------- Fila de iconos sociales (footer, píldora y menú móvil) ----------
+   Cada sitio solo ajusta --icon y el gap. object-fit: contain porque los tres
+   archivos son 150x151 y estirarlos al cuadro los deformaría; sin
+   border-radius, que le cortaría las esquinas al de Facebook. */
+.social-row {
+  display: flex;
+  align-items: center;
+  gap: var(--icon-gap, 14px);
+}
+.social-row a {
   display: inline-flex;
-  width: 34px;
-  height: 34px;
+  flex-shrink: 0;
+  width: var(--icon, 34px);
+  height: var(--icon, 34px);
+  /* padding: 0 explícito porque dentro del menú móvil hereda el relleno de
+     .mobile-nav-menu a, que deformaría el cuadro del icono. */
+  padding: 0;
   border-radius: 999px;
   transition: transform 0.15s ease;
 }
-.footer-ig:hover { transform: scale(1.08); }
-.footer-ig img { width: 100%; height: 100%; border-radius: 999px; }
+.social-row a:hover { transform: scale(1.08); }
+.social-row a:focus-visible {
+  outline: 2px solid var(--niners-gold-light);
+  outline-offset: 3px;
+}
+.social-row img { width: 100%; height: 100%; object-fit: contain; }
 .footer-privacy {
   margin-top: -4px;
   font-size: 0.78rem;
@@ -756,26 +771,18 @@
 }
 .footer-privacy:hover { color: var(--niners-white); opacity: 1; }
 
-/* ---------- Icono de Instagram en el menú ---------- */
-.nav-ig {
-  display: inline-flex;
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  transition: transform 0.15s ease;
-}
-.nav-ig:hover { transform: scale(1.12); }
-.nav-ig img { width: 100%; height: 100%; border-radius: 999px; }
-.mobile-menu-ig {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* ---------- Medidas de la fila social en cada contexto ---------- */
+.footer-social { --icon: 34px; --icon-gap: 16px; }
+.nav-social { --icon: 24px; --icon-gap: 12px; }
+.mobile-menu-social {
+  --icon: 26px;
+  --icon-gap: 16px;
+  justify-content: center;
   margin-top: 6px;
   padding-top: 15px;
   border-top: 1px solid rgba(179,153,93,0.25);
 }
-.mobile-menu-ig img { width: 22px; height: 22px; border-radius: 999px; flex-shrink: 0; }
+.mobile-menu-social a:hover { background: none; }
 
 @media (max-width: 880px) {
   .hero-inner { grid-template-columns: 1fr; }

@@ -15,11 +15,18 @@ export async function POST(req: NextRequest, { params }: { params: { fanId: stri
 
   const supabase = getSupabaseAdmin()
 
-  const { data: fan, error: fanError } = await supabase
-    .from('fans')
-    .select('id, nombre, member_number, foto_url')
-    .eq('fan_id', params.fanId)
-    .single()
+  // El staff puede identificar al socio de dos formas:
+  //   - Escaneando el QR, que trae el fan_id largo (NEL-1786491329461)
+  //   - Tecleando el folio impreso en la tarjeta (NE - MX - 009), que es lo
+  //     único legible a simple vista en la puerta
+  // Se aceptan ambas, más el número pelón (9 ó 009).
+  const identificador = decodeURIComponent(params.fanId).trim()
+  const comoFolio = identificador.match(/^(?:ne\s*[-–—]?\s*mx\s*[-–—]?\s*)?0*(\d{1,9})$/i)
+
+  const consulta = supabase.from('fans').select('id, nombre, member_number, foto_url')
+  const { data: fan, error: fanError } = comoFolio
+    ? await consulta.eq('member_number', Number(comoFolio[1])).maybeSingle()
+    : await consulta.eq('fan_id', identificador).maybeSingle()
 
   if (fanError || !fan) {
     return NextResponse.json({ error: 'Miembro no encontrado' }, { status: 404 })

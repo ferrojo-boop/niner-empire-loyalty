@@ -5,6 +5,10 @@
 :root {
   --niners-red: #AA0000;
   --niners-red-bright: #CC0000;
+  /* Rojo del comp de diseño: el que llevan el título del hero y las filas del
+     calendario. Es más cálido que --niners-red y aguanta mejor el texto blanco
+     encima (7.06:1 contra 7.75:1, ambos por arriba de AA). */
+  --niners-red-brand: #AF1918;
   --niners-gold: #B3995D;
   --niners-gold-light: #D4B878;
   /* Text-safe warm tone for text placed on --niners-red surfaces.
