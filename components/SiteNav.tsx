@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { MenuIcon, XIcon } from './icons'
+import { SocialLinks } from './SocialLinks'
 
 const LINKS = [
   { href: '#membresia', label: 'Membresía' },
@@ -9,8 +10,6 @@ const LINKS = [
   { href: '#sede', label: 'Sede' },
   { href: '#calendario', label: 'Calendario' },
 ]
-
-const INSTAGRAM_URL = 'https://www.instagram.com/niner_empire_mexico/'
 
 export function SiteNav() {
   const [open, setOpen] = useState(false)
@@ -46,16 +45,7 @@ export function SiteNav() {
             {link.label}
           </a>
         ))}
-        <a
-          className="nav-ig"
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Instagram de Niner Empire México"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/INSTAGRAM_NINER_EMPIRE_MEXICO.png" alt="" />
-        </a>
+        <SocialLinks className="nav-social" />
       </nav>
 
       <button
@@ -81,18 +71,7 @@ export function SiteNav() {
             {link.label}
           </a>
         ))}
-        <a
-          className="mobile-menu-ig"
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          role="menuitem"
-          onClick={() => setOpen(false)}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/INSTAGRAM_NINER_EMPIRE_MEXICO.png" alt="" />
-          Instagram
-        </a>
+        <SocialLinks className="mobile-menu-social" role="menuitem" onNavigate={() => setOpen(false)} />
       </div>
     </>
   )
