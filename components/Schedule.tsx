@@ -7,10 +7,16 @@ interface Game {
   loc?: 'home' | 'away'
   feature?: boolean
   bye?: boolean
+  pre?: boolean
 }
 
 // Horarios convertidos a tiempo de Ciudad de México (UTC-6 todo el año).
+// La pretemporada arranca a las 6:00/7:00/5:00 PM del Pacífico, que en agosto
+// va en UTC-7, así que a CDMX se le suma una hora.
 const GAMES: Game[] = [
+  { wk: 1, pre: true, date: '13 Ago', time: '7:00 PM', opp: 'Tennessee Titans', venue: "Levi's Stadium", loc: 'home' },
+  { wk: 2, pre: true, date: '20 Ago', time: '8:00 PM', opp: 'Los Angeles Chargers', venue: 'Inglewood, CA', loc: 'away' },
+  { wk: 3, pre: true, date: '27 Ago', time: '6:00 PM', opp: 'Las Vegas Raiders', venue: 'Las Vegas, NV', loc: 'away' },
   { wk: 1, date: '10 Sep', time: '6:35 PM', opp: 'Los Angeles Rams', venue: 'Melbourne, Australia', loc: 'away' },
   { wk: 2, date: '20 Sep', time: '2:25 PM', opp: 'Miami Dolphins', venue: "Levi's Stadium", loc: 'home' },
   { wk: 3, date: '27 Sep', time: '2:05 PM', opp: 'Arizona Cardinals', venue: "Levi's Stadium", loc: 'home' },
@@ -68,7 +74,7 @@ function GameRow({ game }: { game: Game }) {
     >
       <div className="wk">
         {game.wk}
-        <span>Sem</span>
+        <span>{game.pre ? 'Pre' : 'Sem'}</span>
       </div>
       <div className="date">
         {game.date}
@@ -110,7 +116,7 @@ export function Schedule() {
 
         <div className="schedule-list">
           {GAMES.map((game) => (
-            <GameRow key={game.wk} game={game} />
+            <GameRow key={`${game.pre ? 'pre' : 'reg'}-${game.wk}`} game={game} />
           ))}
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--niners-cream)', opacity: 0.55, marginTop: '14px' }}>
