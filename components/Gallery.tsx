@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons'
 
 const SLIDES = [
@@ -121,16 +121,10 @@ const SLIDES = [
   },
 ]
 
-// Ancho de una foto más el gap de la pista: lo que avanza un paso de flecha.
-function stepWidth(track: HTMLElement) {
-  const slide = track.children[0]?.getBoundingClientRect().width ?? 0
-  const gap = parseFloat(getComputedStyle(track).columnGap) || 0
-  return slide + gap || 1
-}
-
-// Píxeles por segundo del loop automático: lo bastante lento para leer las
-// fotos y lo bastante vivo para notar que se mueve solo.
-const AUTOPLAY_SPEED = 55
+// Píxeles por segundo del loop automático. A menos de ~1px por cuadro el
+// scroll redondea el avance y el movimiento se ve a tirones, así que esto se
+// queda bien arriba de ese umbral.
+const AUTOPLAY_SPEED = 120
 // Cuánto espera el loop antes de retomar tras una interacción del usuario.
 const RESUME_DELAY = 2500
 
@@ -140,6 +134,9 @@ export function Gallery() {
   const trackRef = useRef<HTMLDivElement>(null)
   const pausedRef = useRef(false)
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Medidas de la pista cacheadas: leerlas en cada cuadro forzaba un reflow
+  // por frame, que era justo lo que trababa el loop.
+  const metricsRef = useRef({ step: 1, loop: 0 })
   const [activeDot, setActiveDot] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
@@ -169,17 +166,6 @@ export function Gallery() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    const track = trackRef.current
-    if (!track) return
-    function onScroll() {
-      const step = stepWidth(track!)
-      setActiveDot(Math.round(track!.scrollLeft / step) % SLIDES.length)
-    }
-    track.addEventListener('scroll', onScroll, { passive: true })
-    return () => track.removeEventListener('scroll', onScroll)
-  }, [])
-
   function pauseAutoplay() {
     pausedRef.current = true
     if (resumeTimer.current) clearTimeout(resumeTimer.current)
@@ -193,38 +179,69 @@ export function Gallery() {
   }
 
   // Loop infinito: la pista lleva la lista de fotos duplicada, así que al
-  // pasar la mitad del ancho volvemos atrás esa misma mitad y el salto es
+  // recorrer una copia completa volvemos atrás ese mismo ancho y el salto es
   // invisible. Igual al revés, para que la flecha de "anterior" nunca tope.
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     // La copia mide scrollWidth/2 más medio gap: la pista duplicada tiene un
     // gap menos que dos copias seguidas, y sin ese ajuste el salto se ve.
-    let loop = 0
     function measure() {
+      const slide = track!.children[0]?.getBoundingClientRect().width ?? 0
       const gap = parseFloat(getComputedStyle(track!).columnGap) || 0
-      loop = (track!.scrollWidth + gap) / 2
+      metricsRef.current = {
+        step: slide + gap || 1,
+        loop: (track!.scrollWidth + gap) / 2,
+      }
     }
     measure()
+    window.addEventListener('resize', measure)
 
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     let raf = 0
     let last = performance.now()
+    // La posición se lleva aparte en punto flotante: acumularla leyendo
+    // scrollLeft pierde los decimales que el navegador redondea y el avance
+    // sale desparejo.
+    let pos = track.scrollLeft
+    let applied = pos
+    let dot = 0
+
     function frame(now: number) {
-      const dt = now - last
+      const dt = Math.min(now - last, 100)
       last = now
+      const { step, loop } = metricsRef.current
+
+      // Si el usuario movió la pista por su cuenta, retomamos desde ahí.
+      if (Math.abs(track!.scrollLeft - applied) > 1) pos = track!.scrollLeft
+
+      const moving = !still && !pausedRef.current
+      if (moving) pos += (AUTOPLAY_SPEED * dt) / 1000
+
       if (loop > 0) {
-        if (!pausedRef.current) {
-          track!.scrollLeft += (AUTOPLAY_SPEED * dt) / 1000
-        }
-        if (track!.scrollLeft >= loop) track!.scrollLeft -= loop
-        else if (track!.scrollLeft <= 0) track!.scrollLeft += loop
+        if (pos >= loop) pos -= loop
+        else if (pos <= 0) pos += loop
       }
+
+      // Mientras está en pausa no se escribe nada: así el scroll suave de las
+      // flechas y el arrastre del usuario corren sin que el loop los pelee.
+      if (moving || Math.abs(track!.scrollLeft - pos) > 1) {
+        track!.scrollLeft = pos
+        // Se anota lo que pedimos, no lo que devuelve el DOM: releerlo forzaría
+        // un segundo reflow por cuadro y el redondeo cae bajo la tolerancia.
+        applied = pos
+      }
+
+      const next = Math.round(pos / step) % SLIDES.length
+      if (next !== dot) {
+        dot = next
+        setActiveDot(next)
+      }
+
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
-    window.addEventListener('resize', measure)
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
@@ -253,7 +270,7 @@ export function Gallery() {
     if (!track) return
     pauseAutoplay()
     resumeAutoplay()
-    track.scrollBy({ left: dir * stepWidth(track), behavior: 'smooth' })
+    track.scrollBy({ left: dir * metricsRef.current.step, behavior: 'smooth' })
   }
 
   function showLightbox(i: number) {
@@ -279,6 +296,46 @@ export function Gallery() {
     }
   }, [lightboxIndex])
 
+  // Las 46 diapositivas se construyen una sola vez: si se recrearan en cada
+  // render, React reconciliaría la pista completa cada vez que avanza el punto
+  // activo y eso se siente como un tirón.
+  const slideNodes = useMemo(
+    () =>
+      [...SLIDES, ...SLIDES].map((slide, i) => {
+        const index = i % SLIDES.length
+        const isClone = i >= SLIDES.length
+        return (
+          <div
+            key={`${slide.src}-${i}`}
+            className="carousel-slide"
+            role="button"
+            tabIndex={isClone ? -1 : 0}
+            aria-hidden={isClone || undefined}
+            aria-label={`Ver ${slide.caption} en pantalla completa`}
+            onClick={() => showLightbox(index)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                showLightbox(index)
+              }
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={slide.src}
+              alt={isClone ? '' : slide.alt}
+              loading={i < 2 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+            <div className="carousel-cap">{slide.caption}</div>
+          </div>
+        )
+      }),
+    // showLightbox solo llama a un setter de estado, que es estable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
   const lightboxItem = lightboxIndex === null ? null : SLIDES[lightboxIndex]
 
   return (
@@ -292,36 +349,7 @@ export function Gallery() {
         </div>
         <div className="carousel-wrap">
           <div className="carousel-track" ref={trackRef} {...trackHandlers}>
-            {[...SLIDES, ...SLIDES].map((slide, i) => {
-              const index = i % SLIDES.length
-              const isClone = i >= SLIDES.length
-              return (
-                <div
-                  key={`${slide.src}-${i}`}
-                  className="carousel-slide"
-                  role="button"
-                  tabIndex={isClone ? -1 : 0}
-                  aria-hidden={isClone || undefined}
-                  aria-label={`Ver ${slide.caption} en pantalla completa`}
-                  onClick={() => showLightbox(index)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      showLightbox(index)
-                    }
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={slide.src}
-                    alt={isClone ? '' : slide.alt}
-                    loading={i < 2 ? 'eager' : 'lazy'}
-                    decoding="async"
-                  />
-                  <div className="carousel-cap">{slide.caption}</div>
-                </div>
-              )
-            })}
+            {slideNodes}
           </div>
           <div className="carousel-nav">
             <button className="carousel-arrow" aria-label="Anterior" onClick={() => scrollByOne(-1)}>
