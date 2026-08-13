@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-// 10 de septiembre de 2026, 6:35 PM (hora del centro de México, UTC-6)
-const TARGET = new Date('2026-09-10T18:35:00-06:00').getTime()
+// 21 de agosto de 2026, 3:00 PM (hora del centro de México, UTC-6)
+const TARGET = new Date('2026-08-21T15:00:00-06:00').getTime()
 
 function getRemaining() {
   const diff = TARGET - Date.now()
