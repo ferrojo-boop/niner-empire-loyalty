@@ -134,7 +134,9 @@
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 56px;
-  align-items: center;
+  /* La columna izquierda termina en el botón "Ver beneficios", así que alinear
+     ambas columnas abajo deja el pie del formulario a ras de ese botón. */
+  align-items: end;
 }
 .hero-badge-col {
   display: flex;
@@ -829,8 +831,11 @@
 .mobile-menu-social a:hover { background: none; }
 
 @media (max-width: 880px) {
-  .hero-inner { grid-template-columns: 1fr; }
+  .hero-inner { grid-template-columns: 1fr; align-items: stretch; }
   .hero-badge-col { align-items: center; text-align: center; }
+  /* En escritorio el botón va pegado a la izquierda; a una columna se centra
+     con el resto de la columna, así que hay que anular su align-self. */
+  .benefits-btn { align-self: center; }
   /* A una sola columna el título dispone de todo el ancho, así que crece
      más rápido con el viewport que en escritorio. */
   .hero-tagline { --title: clamp(3rem, 15.5vw, 6rem); }
