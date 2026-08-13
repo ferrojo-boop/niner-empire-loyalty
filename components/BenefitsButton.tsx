@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { StarIcon, XIcon, CheckIcon } from './icons'
 
-const BENEFITS = [
+const BENEFITS: { title: string; body: ReactNode; items?: string[] }[] = [
   {
     title: 'Descuentos en negocios afiliados',
-    body: 'Tu membresía se paga sola: muestra tu QR y ahorra cada vez que sales con la Faithful.',
+    body: 'Muestra tu tarjeta digital y obtén descuentos exclusivos:',
     items: [
       'PGBBQ — descuento especial para miembros',
       'Hard Rock Café Mexico City — descuento especial para miembros',
@@ -16,16 +16,22 @@ const BENEFITS = [
   },
   {
     title: 'Coleccionables de edición limitada',
-    body: 'No se compran, se ganan. Asiste a las Watch Party 2026, registra tu visita con el QR y desbloquea los 3 pines magnéticos de la temporada.',
+    body: 'NO SE COMPRAN, SE GANAN. Asiste a las Watch Party 2026, muestra tu QR al staff, registra tu visita con el QR y desbloquea los 3 pines magnéticos de la temporada.',
     items: ['Pin No. 1 — al llegar a 5 visitas', 'Pin No. 2 — al llegar a 10 visitas', 'Pin No. 3 — al llegar a 15 visitas'],
   },
   {
-    title: 'Sorteos y contenido exclusivo',
-    body: 'Rifas de mercancía oficial y contenido reservado solo para miembros registrados. Si no estás en la lista, no entras al sorteo.',
+    title: 'Sorteos',
+    body: 'Rifas de mercancía y contenido reservado solo para miembros registrados.',
   },
   {
     title: 'Membresía física metálica',
-    body: 'Sube de nivel: placa metálica dorada de edición limitada, personalizada con tu QR grabado a láser y lanyard en alto relieve. Incluye los mismos beneficios que la digital. Costo de recuperación $400.',
+    body: (
+      <>
+        Sube de nivel: placa metálica dorada de edición limitada, personalizada con tu QR grabado a
+        láser y lanyard en alto relieve. Incluye los mismos beneficios que la digital.{' '}
+        <b className="hl">PREGUNTA POR DISPONIBILIDAD</b>
+      </>
+    ),
   },
 ]
 
@@ -66,10 +72,7 @@ export function BenefitsButton() {
             <XIcon size={18} />
           </button>
           <h3 id="benefitsTitle">Beneficios de tu membresía</h3>
-          <p className="sub">
-            Ser de la Faithful mexicana tiene premio. Regístrate gratis y activa hoy mismo todos
-            estos beneficios.
-          </p>
+          <p className="sub">Regístrate gratis y activa hoy mismo todos estos beneficios:</p>
           <ul className="benefit-list">
             {BENEFITS.map((b) => (
               <li key={b.title}>
@@ -91,7 +94,10 @@ export function BenefitsButton() {
             ))}
           </ul>
           <div className="modal-cta">
-            <p>Es gratis y toma menos de 2 minutos. Tu QR llega al instante.</p>
+            <p>
+              Es gratis y toma menos de 2 minutos. Tu tarjeta personalizada la descargas al
+              instante.
+            </p>
             <a href="#membresia" className="benefits-btn" onClick={() => setOpen(false)}>
               Quiero mi membresía
             </a>

@@ -239,6 +239,9 @@
   padding: 30px 28px 26px;
   box-shadow: 0 30px 70px rgba(0,0,0,0.55);
   position: relative;
+  /* El modal cuelga de .hero-badge-col, que en móvil centra su texto; el
+     contenido de la ficha siempre va alineado a la izquierda. */
+  text-align: left;
 }
 .modal-close {
   position: absolute;
@@ -279,6 +282,7 @@
 }
 .benefit-list .txt b { display: block; font-size: 0.92rem; color: var(--niners-white); font-weight: 800; }
 .benefit-list .txt span { font-size: 0.82rem; color: var(--niners-cream); opacity: 0.8; line-height: 1.4; }
+.benefit-list .txt .hl { color: var(--niners-gold-light); font-weight: 800; letter-spacing: 0.04em; }
 .benefit-sub {
   list-style: none;
   margin: 7px 0 0;
