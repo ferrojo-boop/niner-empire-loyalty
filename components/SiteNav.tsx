@@ -40,8 +40,6 @@ export function SiteNav() {
   return (
     <>
       <nav className="site-nav" aria-label="Navegación principal">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="nav-logo" src="/NinerEmpireMXescudo.png" alt="Niner Empire México" />
         {LINKS.map((link) => (
           <a key={link.href} href={link.href}>
             {link.label}
@@ -68,8 +66,6 @@ export function SiteNav() {
         className={`mobile-nav-menu${open ? ' open' : ''}`}
         role="menu"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="mobile-menu-logo" src="/NinerEmpireMXescudo.png" alt="Niner Empire México" />
         {LINKS.map((link) => (
           <a key={link.href} href={link.href} role="menuitem" onClick={() => setOpen(false)}>
             {link.label}
