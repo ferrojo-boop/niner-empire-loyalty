@@ -26,6 +26,14 @@
   padding: 12px 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
+/* El alto de la píldora lo fija el elemento más alto, que es la fila social
+   (--icon: 24px). El logo se capa a ese mismo alto para no empujarla; el ancho
+   sale solo de la proporción 885x1694 del escudo. */
+.nav-logo {
+  height: 24px;
+  width: auto;
+  flex-shrink: 0;
+}
 .site-nav a {
   font-weight: 800;
   font-size: 0.85rem;
@@ -80,6 +88,13 @@
   box-shadow: 0 20px 45px rgba(0,0,0,0.5);
 }
 .mobile-nav-menu.open { display: flex; }
+/* Arriba del todo y contenido: el escudo es vertical, así que el alto es lo
+   que decide cuánto crece el desplegable. */
+.mobile-menu-logo {
+  height: 34px;
+  width: auto;
+  margin: 2px auto 6px;
+}
 .mobile-nav-menu a {
   font-weight: 800;
   font-size: 0.92rem;
