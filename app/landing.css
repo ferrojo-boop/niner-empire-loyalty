@@ -657,6 +657,8 @@
   color: var(--niners-white);
   font-variant-numeric: tabular-nums;
 }
+.venue-countdown-unit.live { min-width: 132px; }
+.venue-countdown-unit.live .n { font-size: 1.7rem; letter-spacing: 0.01em; }
 .venue-countdown-unit .u {
   margin-top: 4px;
   font-size: 0.7rem;
