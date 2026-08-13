@@ -37,6 +37,11 @@ const GAMES: Game[] = [
   { wk: 18, date: 'Por confirmar', opp: 'Arizona Cardinals', venue: 'Glendale, AZ', loc: 'away' },
 ]
 
+const GROUPS = [
+  { title: 'Pretemporada', games: GAMES.filter((g) => g.pre) },
+  { title: 'Temporada regular', games: GAMES.filter((g) => !g.pre) },
+]
+
 function GameRow({ game }: { game: Game }) {
   if (game.bye) {
     return (
@@ -115,8 +120,15 @@ export function Schedule() {
         </div>
 
         <div className="schedule-list">
-          {GAMES.map((game) => (
-            <GameRow key={`${game.pre ? 'pre' : 'reg'}-${game.wk}`} game={game} />
+          {/* Los dos bloques salen de la misma lista, así que basta con marcar
+              pre: true en un partido para que caiga bajo el encabezado correcto. */}
+          {GROUPS.map((group) => (
+            <div key={group.title} className="schedule-group" role="group" aria-label={group.title}>
+              <h3 className="schedule-heading">{group.title}</h3>
+              {group.games.map((game) => (
+                <GameRow key={`${game.pre ? 'pre' : 'reg'}-${game.wk}`} game={game} />
+              ))}
+            </div>
           ))}
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--niners-cream)', opacity: 0.55, marginTop: '14px' }}>

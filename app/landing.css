@@ -730,6 +730,20 @@
   flex-direction: column;
   border-top: 1px solid rgba(240,223,192,0.12);
 }
+/* Banda que separa pretemporada de temporada regular. Las filas ya traen su
+   propio border-bottom, así que aquí solo hace falta el de abajo. */
+.schedule-group { display: flex; flex-direction: column; }
+.schedule-heading {
+  margin: 0;
+  padding: 11px 18px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--niners-gold-light);
+  background: rgba(179, 153, 93, 0.1);
+  border-bottom: 1px solid rgba(179, 153, 93, 0.28);
+}
 .game-row {
   display: grid;
   grid-template-columns: 64px 130px 1fr auto;
