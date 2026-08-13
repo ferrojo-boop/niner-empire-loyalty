@@ -1,4 +1,5 @@
-import { PinIcon, ArrowUpRightIcon } from './icons'
+import { PinIcon } from './icons'
+import { VenueCountdown } from './VenueCountdown'
 
 export function Venue() {
   return (
@@ -15,30 +16,9 @@ export function Venue() {
             <PinIcon size={28} />
           </div>
           <div className="venue-info">
-            <h3>Antisocial Rooftop</h3>
-            <p className="venue-address">
-              Galerías Insurgentes, Oso 73, 2do piso, Actipan, Benito Juárez, 03230, Ciudad de México
-            </p>
-            <ul className="venue-hours">
-              <li>
-                <span className="d">Jue – Sáb</span>
-                <span className="h">2:00 PM – 2:00 AM</span>
-              </li>
-              <li>
-                <span className="d">Dom – Mié</span>
-                <span className="h">2:00 PM – 10:00 PM</span>
-              </li>
-            </ul>
+            <h3>Por confirmar</h3>
+            <VenueCountdown />
           </div>
-          <a
-            className="venue-cta"
-            href="https://maps.app.goo.gl/vVQ1kymn1Cr3n3iM7"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Cómo llegar
-            <ArrowUpRightIcon size={16} />
-          </a>
         </div>
       </div>
     </section>

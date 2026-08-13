@@ -560,7 +560,7 @@
 .venue-section .block-inner { position: relative; z-index: 2; }
 .venue-card {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 32px;
   background: linear-gradient(120deg, rgba(170,0,0,0.32), rgba(179,153,93,0.12));
@@ -623,6 +623,49 @@
   white-space: nowrap;
 }
 .venue-cta:hover { background: var(--niners-gold-light); }
+.venue-countdown {
+  margin-top: 16px;
+  min-height: 76px;
+}
+.venue-countdown-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--niners-gold-light);
+}
+.venue-countdown-units {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+.venue-countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 84px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--niners-gold);
+  border-radius: 14px;
+  background: rgba(10, 5, 4, 0.4);
+}
+.venue-countdown-unit .n {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--niners-white);
+  font-variant-numeric: tabular-nums;
+}
+.venue-countdown-unit .u {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--niners-cream);
+  opacity: 0.85;
+}
 
 @media (max-width: 720px) {
   .venue-card { grid-template-columns: 1fr; text-align: center; }
@@ -630,6 +673,7 @@
   .venue-hours { align-items: center; }
   .venue-hours li { flex-direction: column; gap: 0; align-items: center; }
   .venue-cta { margin: 0 auto; }
+  .venue-countdown-units { justify-content: center; }
 }
 
 /* ---------- Schedule ---------- */
