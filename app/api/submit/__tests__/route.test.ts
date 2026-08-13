@@ -4,10 +4,20 @@
 import { POST } from '../route'
 import { NextRequest } from 'next/server'
 
+// insert() no se espera directo: la ruta encadena .select('member_number')
+// .single() para recuperar el folio que asigna la base, así que el doble tiene
+// que devolver el builder completo y no una promesa.
 jest.mock('@/lib/supabase', () => ({
   getSupabaseAdmin: jest.fn().mockReturnValue({
     from: jest.fn().mockReturnValue({
-      insert: jest.fn().mockResolvedValue({ error: null }),
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { member_number: 42 },
+            error: null,
+          }),
+        }),
+      }),
     }),
   }),
 }))
@@ -34,6 +44,7 @@ describe('POST /api/submit', () => {
     expect(res.status).toBe(200)
     expect(json.fanId).toBeDefined()
     expect(typeof json.fanId).toBe('string')
+    expect(json.memberNumber).toBe(42)
   })
 
   it('returns 400 when required fields are missing', async () => {

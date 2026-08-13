@@ -4,8 +4,10 @@
 import { POST } from '../route'
 import { NextRequest } from 'next/server'
 
+// La ruta sube con la llave de servicio, así que el doble tiene que ser
+// getSupabaseAdmin: si se mockea otro nombre, el import queda undefined.
 jest.mock('@/lib/supabase', () => ({
-  getSupabase: jest.fn().mockReturnValue({
+  getSupabaseAdmin: jest.fn().mockReturnValue({
     storage: {
       from: jest.fn().mockReturnValue({
         upload: jest.fn().mockResolvedValue({ error: null }),
