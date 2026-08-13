@@ -121,10 +121,25 @@ const SLIDES = [
   },
 ]
 
+// Ancho de una foto más el gap de la pista: lo que avanza un paso de flecha.
+function stepWidth(track: HTMLElement) {
+  const slide = track.children[0]?.getBoundingClientRect().width ?? 0
+  const gap = parseFloat(getComputedStyle(track).columnGap) || 0
+  return slide + gap || 1
+}
+
+// Píxeles por segundo del loop automático: lo bastante lento para leer las
+// fotos y lo bastante vivo para notar que se mueve solo.
+const AUTOPLAY_SPEED = 55
+// Cuánto espera el loop antes de retomar tras una interacción del usuario.
+const RESUME_DELAY = 2500
+
 export function Gallery() {
   const sectionRef = useRef<HTMLElement>(null)
   const bgRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
+  const pausedRef = useRef(false)
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [activeDot, setActiveDot] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
@@ -158,18 +173,87 @@ export function Gallery() {
     const track = trackRef.current
     if (!track) return
     function onScroll() {
-      const width = track!.children[0]?.getBoundingClientRect().width ?? 1
-      setActiveDot(Math.round(track!.scrollLeft / width))
+      const step = stepWidth(track!)
+      setActiveDot(Math.round(track!.scrollLeft / step) % SLIDES.length)
     }
-    track.addEventListener('scroll', onScroll)
+    track.addEventListener('scroll', onScroll, { passive: true })
     return () => track.removeEventListener('scroll', onScroll)
   }, [])
+
+  function pauseAutoplay() {
+    pausedRef.current = true
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+  }
+
+  function resumeAutoplay(delay = RESUME_DELAY) {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    resumeTimer.current = setTimeout(() => {
+      pausedRef.current = false
+    }, delay)
+  }
+
+  // Loop infinito: la pista lleva la lista de fotos duplicada, así que al
+  // pasar la mitad del ancho volvemos atrás esa misma mitad y el salto es
+  // invisible. Igual al revés, para que la flecha de "anterior" nunca tope.
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    // La copia mide scrollWidth/2 más medio gap: la pista duplicada tiene un
+    // gap menos que dos copias seguidas, y sin ese ajuste el salto se ve.
+    let loop = 0
+    function measure() {
+      const gap = parseFloat(getComputedStyle(track!).columnGap) || 0
+      loop = (track!.scrollWidth + gap) / 2
+    }
+    measure()
+
+    let raf = 0
+    let last = performance.now()
+    function frame(now: number) {
+      const dt = now - last
+      last = now
+      if (loop > 0) {
+        if (!pausedRef.current) {
+          track!.scrollLeft += (AUTOPLAY_SPEED * dt) / 1000
+        }
+        if (track!.scrollLeft >= loop) track!.scrollLeft -= loop
+        else if (track!.scrollLeft <= 0) track!.scrollLeft += loop
+      }
+      raf = requestAnimationFrame(frame)
+    }
+    raf = requestAnimationFrame(frame)
+    window.addEventListener('resize', measure)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', measure)
+    }
+  }, [])
+
+  // Cualquier gesto sobre la galería detiene el loop; se retoma solo cuando
+  // el usuario deja de interactuar.
+  const trackHandlers = {
+    onPointerEnter: pauseAutoplay,
+    onPointerLeave: () => resumeAutoplay(600),
+    onPointerDown: pauseAutoplay,
+    onPointerUp: () => resumeAutoplay(),
+    onTouchStart: pauseAutoplay,
+    onTouchEnd: () => resumeAutoplay(),
+    onWheel: () => {
+      pauseAutoplay()
+      resumeAutoplay()
+    },
+    onFocus: pauseAutoplay,
+    onBlur: () => resumeAutoplay(),
+  }
 
   function scrollByOne(dir: 1 | -1) {
     const track = trackRef.current
     if (!track) return
-    const width = track.children[0]?.getBoundingClientRect().width ?? 0
-    track.scrollBy({ left: dir * (width + 20), behavior: 'smooth' })
+    pauseAutoplay()
+    resumeAutoplay()
+    track.scrollBy({ left: dir * stepWidth(track), behavior: 'smooth' })
   }
 
   function showLightbox(i: number) {
@@ -177,7 +261,11 @@ export function Gallery() {
   }
 
   useEffect(() => {
-    if (lightboxIndex === null) return
+    if (lightboxIndex === null) {
+      resumeAutoplay(600)
+      return
+    }
+    pauseAutoplay()
     document.body.style.overflow = 'hidden'
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setLightboxIndex(null)
@@ -203,32 +291,37 @@ export function Gallery() {
           <h2>La Familia en Acción</h2>
         </div>
         <div className="carousel-wrap">
-          <div className="carousel-track" ref={trackRef}>
-            {SLIDES.map((slide, i) => (
-              <div
-                key={slide.src}
-                className="carousel-slide"
-                role="button"
-                tabIndex={0}
-                aria-label={`Ver ${slide.caption} en pantalla completa`}
-                onClick={() => showLightbox(i)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    showLightbox(i)
-                  }
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={slide.src}
-                  alt={slide.alt}
-                  loading={i < 2 ? 'eager' : 'lazy'}
-                  decoding="async"
-                />
-                <div className="carousel-cap">{slide.caption}</div>
-              </div>
-            ))}
+          <div className="carousel-track" ref={trackRef} {...trackHandlers}>
+            {[...SLIDES, ...SLIDES].map((slide, i) => {
+              const index = i % SLIDES.length
+              const isClone = i >= SLIDES.length
+              return (
+                <div
+                  key={`${slide.src}-${i}`}
+                  className="carousel-slide"
+                  role="button"
+                  tabIndex={isClone ? -1 : 0}
+                  aria-hidden={isClone || undefined}
+                  aria-label={`Ver ${slide.caption} en pantalla completa`}
+                  onClick={() => showLightbox(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      showLightbox(index)
+                    }
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={slide.src}
+                    alt={isClone ? '' : slide.alt}
+                    loading={i < 2 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
+                  <div className="carousel-cap">{slide.caption}</div>
+                </div>
+              )
+            })}
           </div>
           <div className="carousel-nav">
             <button className="carousel-arrow" aria-label="Anterior" onClick={() => scrollByOne(-1)}>

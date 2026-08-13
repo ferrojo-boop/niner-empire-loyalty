@@ -409,14 +409,14 @@
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  /* Sin scroll-snap: el loop automático avanza fracciones de píxel y el snap
+     lo estaría frenando en cada foto. */
   padding-bottom: 8px;
   scrollbar-width: none;
 }
 .carousel-track::-webkit-scrollbar { display: none; }
 .carousel-slide {
   flex: 0 0 min(560px, 82vw);
-  scroll-snap-align: start;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(179,153,93,0.35);
@@ -470,8 +470,15 @@
 }
 .carousel-arrow:hover { background: var(--niners-gold); color: var(--niners-ink); }
 .carousel-dots { display: flex; align-items: center; gap: 8px; margin: 0 6px; }
-.dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(179,153,93,0.35); }
+.dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(179,153,93,0.35); flex-shrink: 0; }
 .dot.active { background: var(--niners-gold-light); width: 22px; transition: width 0.25s ease; }
+
+@media (max-width: 720px) {
+  /* Con tantas fotos la fila de puntos desborda y empuja las flechas contra
+     los bordes de la pantalla; sin ella las flechas quedan centradas. */
+  .carousel-dots { display: none; }
+  .carousel-nav { gap: 20px; }
+}
 
 /* ---------- Lightbox de galería ---------- */
 .lightbox-overlay {
