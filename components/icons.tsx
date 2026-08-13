@@ -20,6 +20,16 @@ export function CameraIcon({ size = 24, className }: IconProps) {
   )
 }
 
+export function GalleryIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="8.5" cy="10" r="1.5" />
+      <path d="m5 17 4.5-4.5a1.5 1.5 0 0 1 2.1 0L15 16m0 0 1.4-1.4a1.5 1.5 0 0 1 2.1 0L20 16" />
+    </svg>
+  )
+}
+
 export function SpinnerIcon({ size = 20, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={`animate-spin ${className ?? ''}`} aria-hidden="true">
