@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FanFormData, FormStep } from '@/lib/types'
+import { FanFormData, FormStep, SubmitError } from '@/lib/types'
+import { compressPhoto } from '@/lib/compressPhoto'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
@@ -24,7 +25,7 @@ export function FanForm() {
   const [triviaDone, setTriviaDone] = useState(false)
   const [data, setData] = useState<FanFormData>(initialData)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<SubmitError | null>(null)
 
   function handleChange(partial: Partial<FanFormData>) {
     setData((prev) => ({ ...prev, ...partial }))
@@ -36,9 +37,12 @@ export function FanForm() {
     setError(null)
 
     try {
-      // 1. Subir foto
+      // 1. Subir foto, ya aligerada: la que entrega la cámara pesa varios MB y
+      // ni la tarjeta ni el escáner del staff necesitan tanto.
+      const foto = await compressPhoto(data.photoFile)
+
       const photoFormData = new FormData()
-      photoFormData.append('photo', data.photoFile)
+      photoFormData.append('photo', foto)
       photoFormData.append('nombre', data.nombre)
 
       const uploadRes = await fetch('/api/upload-photo', { method: 'POST', body: photoFormData })
@@ -58,13 +62,26 @@ export function FanForm() {
           urlFoto: url,
         }),
       })
+      // El correo ya tenía membresía. No es un fallo que se arregle
+      // reintentando, así que en vez de dejar el botón listo para otra vuelta se
+      // le ofrece el enlace a la tarjeta que ya existe.
+      if (submitRes.status === 409) {
+        const { fanId: existente } = await submitRes.json()
+        setError({
+          mensaje: 'Ya tienes una membresía registrada con este correo.',
+          fanId: existente ?? undefined,
+        })
+        setIsSubmitting(false)
+        return
+      }
+
       if (!submitRes.ok) throw new Error('Error al guardar tus datos')
       const { fanId } = await submitRes.json()
 
       // 3. Ir a la página de la tarjeta
       router.push(`/tarjeta/${fanId}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado')
+      setError({ mensaje: err instanceof Error ? err.message : 'Error inesperado' })
       setIsSubmitting(false)
     }
   }

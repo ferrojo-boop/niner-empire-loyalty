@@ -1,6 +1,6 @@
 'use client'
 
-import { FanFormData } from '@/lib/types'
+import { FanFormData, SubmitError } from '@/lib/types'
 import { EditIcon, SpinnerIcon } from './icons'
 
 interface StepSummaryProps {
@@ -9,7 +9,7 @@ interface StepSummaryProps {
   onEditPhoto: () => void
   onSubmit: () => void
   isSubmitting: boolean
-  error: string | null
+  error: SubmitError | null
 }
 
 export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitting, error }: StepSummaryProps) {
@@ -94,7 +94,19 @@ export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitt
 
       {error && (
         <p role="alert" className="text-[var(--niners-cream)] bg-black/30 rounded-lg px-4 py-2 text-sm font-bold text-center">
-          {error}
+          {error.mensaje}
+          {error.fanId && (
+            <>
+              {' '}
+              <a
+                href={`/tarjeta/${error.fanId}`}
+                className="text-[var(--niners-gold-light)] underline
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--niners-gold-light)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--niners-red)] rounded"
+              >
+                Ver mi tarjeta
+              </a>
+            </>
+          )}
         </p>
       )}
     </div>
