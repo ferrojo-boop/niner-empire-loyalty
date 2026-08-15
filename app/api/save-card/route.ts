@@ -13,15 +13,17 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = getSupabaseAdmin()
-  const fileName = `${fanId}.png`
+  // JPEG y no PNG: es el archivo más pesado por miembro y a esta resolución el
+  // PNG pesa cerca del doble sin diferencia visible. Ver CARD_MIME en /tarjeta.
+  const fileName = `${fanId}.jpg`
 
   const arrayBuffer = await card.arrayBuffer()
-  const blob = new Blob([arrayBuffer], { type: 'image/png' })
+  const blob = new Blob([arrayBuffer], { type: 'image/jpeg' })
 
   // upsert: si el fan vuelve a abrir su tarjeta, se reemplaza la versión guardada.
   const { error: uploadError } = await supabase.storage
     .from('fan-cards')
-    .upload(fileName, blob, { contentType: 'image/png', upsert: true })
+    .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true })
 
   if (uploadError) {
     console.error('Card upload error:', uploadError)

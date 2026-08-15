@@ -10,12 +10,14 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabaseAdmin()
 
-  // El correo se guarda tal cual lo escribió el fan, así que se compara sin
-  // distinguir mayúsculas para que "Fan@correo.com" también encuentre su tarjeta.
+  // El correo se guarda normalizado a minúsculas al registrar, así que aquí se
+  // normaliza igual y se compara exacto. Antes esto usaba ilike, que además de
+  // ser innecesario trataba el guion bajo como comodín: quien tuviera un correo
+  // tipo "fer_rojo@x.com" podía recibir la tarjeta de otra persona.
   const { data: fan, error } = await supabase
     .from('fans')
     .select('fan_id, nombre, tarjeta_url')
-    .ilike('email', email.trim())
+    .eq('email', email.trim().toLowerCase())
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
