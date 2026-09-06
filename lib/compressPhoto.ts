@@ -7,15 +7,23 @@
 //
 // La tarjeta solo necesita un cuadro de 900 px (PHOTO_PX en /tarjeta), así que
 // basta con dejar el lado corto en 1080 —margen suficiente para ese recorte— y
-// recomprimir a JPEG. Una foto de 4 MB baja a ~450 KB sin diferencia visible.
-// (Medido el 2026-09-05 sobre las fotos ya guardadas en el bucket: 400 y 511 KB.)
+// recomprimir a JPEG. Una foto de 4 MB baja a unos cientos de KB.
+//
+// La foto es ahora lo único que se archiva por miembro: la tarjeta ya no se
+// guarda, se rearma en el navegador cada vez. Eso convierte a este QUALITY en
+// la única palanca de capacidad que queda, así que está en 0.80 y no en 0.85.
+// A 900 px dentro del círculo de la tarjeta la diferencia no se aprecia, pero
+// es un valor subjetivo: si alguna foto se ve sucia, subirlo es seguro.
+//
+// Con 0.85 las fotos del bucket midieron 400 y 511 KB (2026-09-05). El peso a
+// 0.80 todavía no está medido —hay que confirmarlo con registros reales.
 //
 // Al pasar la imagen por <img> el navegador ya aplicó la orientación EXIF, así
 // que las fotos verticales no se suben giradas.
 
 const SHORT_SIDE = 1080
 const LONG_SIDE_MAX = 1920
-const QUALITY = 0.85
+const QUALITY = 0.80
 
 /**
  * Devuelve una versión ligera de la foto.

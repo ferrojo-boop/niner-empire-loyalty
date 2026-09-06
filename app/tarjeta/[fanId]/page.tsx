@@ -93,12 +93,6 @@ export default function TarjetaPage() {
         .then((blob) => {
           if (cancelled) return
           setCardBlob(blob)
-          // Se archiva en Supabase para que el fan pueda recuperarla luego con
-          // su correo. Es best-effort: si falla, la tarjeta igual funciona aquí.
-          const form = new FormData()
-          form.append('card', blob, `${fanId}.${CARD_EXT}`)
-          form.append('fanId', String(fanId))
-          fetch('/api/save-card', { method: 'POST', body: form }).catch(() => {})
         })
         .catch(() => {
           // si falla, se reintentará al hacer clic en los botones
@@ -108,7 +102,7 @@ export default function TarjetaPage() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [fan, qrDataUrl, photoSquareUrl, fanId])
+  }, [fan, qrDataUrl, photoSquareUrl])
 
   async function waitForImages(el: HTMLElement) {
     const imgs = Array.from(el.querySelectorAll('img'))

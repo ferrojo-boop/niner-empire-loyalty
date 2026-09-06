@@ -41,20 +41,22 @@ Tablas en `public`: `fans`, `staff`, `visits`, `rewards`, `fan_rewards`,
 
 `fans` es la central: `fan_id` (text, el del QR y las URLs), `member_number`
 (entero autoincremental, el folio de la tarjeta), `nombre`, `email`,
-`whatsapp`, `fan_desde`, `jugador_favorito`, `foto_url`, `tarjeta_url`,
+`whatsapp`, `fan_desde`, `jugador_favorito`, `foto_url`, `tarjeta_url`
+(en desuso: se conserva por los registros viejos, ya no se escribe ni se lee),
 `ano_registro`, `created_at`.
 
 Buckets de Storage, ambos públicos:
 
 - `fan-photos` — foto del fan, límite 5 MB, JPEG/PNG/WebP/HEIC/HEIF
-- `fan-cards` — tarjeta ya rasterizada, límite 10 MB, JPEG/PNG
+- `fan-cards` — **en desuso.** Guardaba la tarjeta rasterizada; ya nada escribe
+  ahí ni lee de ahí. Solo conserva las tarjetas de los primeros registros.
 
 ## Rutas
 
 Páginas: `/` (registro), `/tarjeta/[fanId]`, `/checkin/[fanId]`, `/recuperar`,
 `/staff`, `/staff/definir-password`, `/privacidad`.
 
-API: `/api/submit`, `/api/upload-photo`, `/api/save-card`, `/api/recuperar`,
+API: `/api/submit`, `/api/upload-photo`, `/api/recuperar`,
 `/api/fan/[fanId]`, `/api/checkin/[fanId]`, `/api/staff/me`.
 
 El candado de staff vive en el servidor (`lib/requireStaff.ts`): valida el
@@ -63,21 +65,35 @@ Bearer token contra Supabase Auth y exige que el usuario esté en `staff` con
 
 ## Capacidad: el plan gratuito de Supabase
 
-Pesos medidos el 2026-09-05 sobre los archivos ya guardados (no estimados):
+**La tarjeta no se archiva.** `/tarjeta/[fanId]` la rearma en el navegador cada
+vez, a partir de cuatro cosas que ya existen: `nombre` y `member_number` de la
+base, la foto del bucket, y el QR que se genera al vuelo desde el `fan_id`. El
+JPEG solo se materializa cuando el socio lo descarga o lo comparte, y se queda
+en su celular.
+
+De ahí que **lo único que pesa por miembro sea la foto**, y que el archivo
+verdaderamente irreemplazable sea esa foto: si se pierde, la tarjeta ya no se
+puede reconstruir.
 
 | Concepto | Peso |
 |---|---|
-| Tarjeta JPEG (1778×3842) | ~1.39 MB |
-| Foto comprimida | ~450 KB |
-| **Total por miembro** | **~1.83 MB** |
+| Foto comprimida (`QUALITY` 0.85) | ~450 KB — medido 2026-09-05 |
+| Foto comprimida (`QUALITY` 0.80, actual) | ~350 KB — estimado, falta medir |
 
-- **Almacenamiento**: 1 GB → **~560 miembros**.
-- **Egress**: 5 GB/mes → ~3,600 vistas de tarjeta al mes. **Este techo se
-  alcanza antes que el de almacenamiento.**
+- **Almacenamiento**: 1 GB → **~2,800 miembros** a 350 KB.
+- **Egress**: 5 GB/mes, y solo lo consume la foto. Además se sube con
+  `cacheControl` de un año sobre una URL inmutable (lleva timestamp y nunca se
+  sobrescribe), así que las visitas repetidas del mismo socio salen del caché
+  del navegador y no cuentan.
+
+Objetivo de la temporada 2026-27: ~1,000 miembros ≈ 350 MB. Cabe con holgura.
 
 Los miembros registrados antes del 2026-08-14 pesan ~3.3 MB (tarjeta en PNG y
-foto sin comprimir). Al pasar de ~560 miembros, lo primero que conviene evaluar
-es bajar `CARD_QUALITY` o dejar de archivar la tarjeta y regenerarla al vuelo.
+foto sin comprimir). El bucket `fan-cards` ya no recibe nada; conserva las
+tarjetas de los primeros registros y se puede vaciar cuando se quiera.
+
+Si algún día aprieta, la siguiente palanca es Cloudflare R2 (10 GB y egress
+cero, sin costo) solo para las fotos, dejando base y auth en Supabase.
 
 ## El proyecto se pausa por inactividad
 

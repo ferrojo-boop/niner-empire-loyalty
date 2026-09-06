@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // tipo "fer_rojo@x.com" podía recibir la tarjeta de otra persona.
   const { data: fan, error } = await supabase
     .from('fans')
-    .select('fan_id, nombre, tarjeta_url')
+    .select('fan_id, nombre')
     .eq('email', email.trim().toLowerCase())
     .order('created_at', { ascending: false })
     .limit(1)
@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Solo se devuelve el fan_id: /tarjeta vuelve a armar la tarjeta desde el
+  // nombre, el folio, la foto y el QR. No hay ningún archivo que recuperar.
   return NextResponse.json({
     fanId: fan.fan_id,
     nombre: fan.nombre,
-    tarjetaUrl: fan.tarjeta_url,
   })
 }
