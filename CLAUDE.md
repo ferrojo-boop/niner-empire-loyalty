@@ -77,16 +77,23 @@ puede reconstruir.
 
 | Concepto | Peso |
 |---|---|
-| Foto comprimida (`QUALITY` 0.85) | ~450 KB — medido 2026-09-05 |
-| Foto comprimida (`QUALITY` 0.80, actual) | ~350 KB — estimado, falta medir |
+| Foto a `QUALITY` 0.85 | 400 y 511 KB — medidos 2026-09-05 |
+| Foto a `QUALITY` 0.80 (actual) | **337 KB** — medido 2026-09-06 |
 
-- **Almacenamiento**: 1 GB → **~2,800 miembros** a 350 KB.
+Ojo con ese 337 KB: es **una sola foto**, y de un sujeto distinto al de las
+otras dos. El peso de un JPEG depende tanto del contenido como de la calidad,
+así que no es limpio atribuirle toda la diferencia al cambio de 0.85 a 0.80.
+Sirve como dato real de lo que pesa una foto hoy, no como medida del ahorro.
+Para planear conviene usar **400 KB**, que deja margen sobre lo medido.
+
+- **Almacenamiento**: 1 GB → **~2,900 miembros** a 337 KB, o ~2,400 a 400 KB.
 - **Egress**: 5 GB/mes, y solo lo consume la foto. Además se sube con
   `cacheControl` de un año sobre una URL inmutable (lleva timestamp y nunca se
   sobrescribe), así que las visitas repetidas del mismo socio salen del caché
   del navegador y no cuentan.
 
-Objetivo de la temporada 2026-27: ~1,000 miembros ≈ 350 MB. Cabe con holgura.
+Objetivo de la temporada 2026-27: **1,000 miembros ≈ 345 MB, el 35% del plan
+gratuito** (410 MB / 41% si se planea con 400 KB por foto).
 
 Los miembros registrados antes del 2026-08-14 pesan ~3.3 MB (tarjeta en PNG y
 foto sin comprimir). El bucket `fan-cards` ya no recibe nada; conserva las
