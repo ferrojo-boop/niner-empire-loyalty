@@ -56,7 +56,7 @@ Buckets de Storage, ambos públicos:
 Páginas: `/` (registro), `/tarjeta/[fanId]`, `/checkin/[fanId]`, `/recuperar`,
 `/staff`, `/staff/definir-password`, `/privacidad`.
 
-API: `/api/submit`, `/api/upload-photo`, `/api/recuperar`,
+API: `/api/submit`, `/api/upload-photo`, `/api/recuperar`, `/api/keep-alive`,
 `/api/fan/[fanId]`, `/api/checkin/[fanId]`, `/api/staff/me`.
 
 El candado de staff vive en el servidor (`lib/requireStaff.ts`): valida el
@@ -113,6 +113,26 @@ una pérdida total de datos.** Durante ese lapso, con DNS ya resolviendo:
 Todo eso es transitorio. **El restore no está completo hasta que
 `/storage/v1/bucket` responda 200**; antes de ese punto ningún conteo en cero
 es concluyente y no hay que diagnosticar pérdida de datos ni tocar backups.
+
+### El cron que lo evita
+
+`/api/keep-alive` toca la base y Storage una vez al día, disparado por el cron
+de Vercel declarado en `vercel.json` (`0 14 * * *`, o sea 14:00 UTC). Con el
+umbral de Supabase en ~7 días, un ping diario deja 7x de margen para tolerar
+días fallidos.
+
+Toca **los dos servicios por separado a propósito**: durante un restore se
+despiertan a destiempo —PostgREST puede seguir devolviendo `PGRST205` mientras
+Storage ya responde, y al revés—, así que un ping que solo mirara uno se creería
+sano. Devuelve 503 si cualquiera de los dos falla.
+
+Existe por el offseason: entre febrero y septiembre no hay watch parties y no
+hay tráfico que mantenga vivo el proyecto.
+
+`CRON_SECRET` es opcional. Si está definido en Vercel, el endpoint exige
+`Authorization: Bearer $CRON_SECRET` (Vercel lo manda solo en las invocaciones
+del cron); si no está, el endpoint queda abierto. Es de solo lectura y no expone
+datos, pero conviene definirlo.
 
 ## Despliegue
 
