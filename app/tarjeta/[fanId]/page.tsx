@@ -17,12 +17,15 @@ const PHOTO_PX = 450 * CAPTURE_SCALE
 const QR_PX = 409 * CAPTURE_SCALE
 
 // La tarjeta se archiva y se descarga en JPEG, no en PNG: a esta resolución el
-// PNG pesa ~1.85 MB y el JPEG ~1.25 MB, y es el archivo más pesado que guarda
-// cada miembro. La resolución no cambia (1778x3842), así que no se ve más
-// chica; lo único que se pierde es precisión de compresión, y medido contra el
-// PNG de referencia el error queda en 0.54 RMSE sobre el QR y 0.44 sobre el
-// texto —bastante por debajo de lo perceptible— así que el QR sigue escaneando
-// y el folio sigue legible.
+// PNG pesa ~2.10 MB y el JPEG ~1.39 MB, y es el archivo más pesado que guarda
+// cada miembro. (Pesos medidos el 2026-09-05 sobre las tarjetas ya archivadas;
+// la estimación previa de 1.85/1.25 MB se quedaba corta.)
+//
+// La resolución no cambia (1778x3842), así que no se ve más chica; lo único
+// que se pierde es precisión de compresión, y medido contra el PNG de
+// referencia el error queda en 0.54 RMSE sobre el QR y 0.44 sobre el texto
+// —bastante por debajo de lo perceptible— así que el QR sigue escaneando y el
+// folio sigue legible.
 const CARD_MIME = 'image/jpeg'
 const CARD_QUALITY = 0.92
 const CARD_EXT = 'jpg'

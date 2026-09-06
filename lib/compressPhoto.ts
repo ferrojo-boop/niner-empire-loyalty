@@ -7,7 +7,8 @@
 //
 // La tarjeta solo necesita un cuadro de 900 px (PHOTO_PX en /tarjeta), así que
 // basta con dejar el lado corto en 1080 —margen suficiente para ese recorte— y
-// recomprimir a JPEG. Una foto de 4 MB baja a ~250 KB sin diferencia visible.
+// recomprimir a JPEG. Una foto de 4 MB baja a ~450 KB sin diferencia visible.
+// (Medido el 2026-09-05 sobre las fotos ya guardadas en el bucket: 400 y 511 KB.)
 //
 // Al pasar la imagen por <img> el navegador ya aplicó la orientación EXIF, así
 // que las fotos verticales no se suben giradas.
