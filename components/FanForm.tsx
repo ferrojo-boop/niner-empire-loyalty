@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FanFormData, FormStep, SubmitError } from '@/lib/types'
 import { compressPhoto } from '@/lib/compressPhoto'
+import { fetchConReintento, ErrorDeRed } from '@/lib/fetchConReintento'
 import { StepFanData } from './StepFanData'
 import { StepTrivia } from './StepTrivia'
 import { StepCamera } from './StepCamera'
@@ -45,12 +46,15 @@ export function FanForm() {
       photoFormData.append('photo', foto)
       photoFormData.append('nombre', data.nombre)
 
-      const uploadRes = await fetch('/api/upload-photo', { method: 'POST', body: photoFormData })
+      const uploadRes = await fetchConReintento('/api/upload-photo', {
+        method: 'POST',
+        body: photoFormData,
+      })
       if (!uploadRes.ok) throw new Error('Error al subir la foto')
       const { url } = await uploadRes.json()
 
       // 2. Guardar datos del fan
-      const submitRes = await fetch('/api/submit', {
+      const submitRes = await fetchConReintento('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,7 +85,18 @@ export function FanForm() {
       // 3. Ir a la página de la tarjeta
       router.push(`/tarjeta/${fanId}`)
     } catch (err) {
-      setError({ mensaje: err instanceof Error ? err.message : 'Error inesperado' })
+      // Se separa la caída de red del error de verdad: "Error al guardar tus
+      // datos" suena a que los datos están mal y el socio los revisa en vano,
+      // cuando lo único que pasó es que se cayó la señal. Y hay que decirle
+      // que no perdió lo que ya escribió, porque el formulario lo conserva.
+      setError({
+        mensaje:
+          err instanceof ErrorDeRed
+            ? 'Se interrumpió la conexión. Revisa tu señal y vuelve a intentarlo: tus datos y tu foto siguen aquí.'
+            : err instanceof Error
+              ? err.message
+              : 'Error inesperado',
+      })
       setIsSubmitting(false)
     }
   }

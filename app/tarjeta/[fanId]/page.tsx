@@ -250,6 +250,15 @@ export default function TarjetaPage() {
         />
       </div>
 
+      {/* El QR codifica una URL, así que la tarjeta guardada funciona sin señal:
+          el socio muestra la imagen y solo el teléfono del staff necesita
+          conexión para abrir el check-in. Sin este aviso, muchos terminan el
+          registro sin guardar nada y llegan a la puerta dependiendo de tener
+          buena señal justo donde la antena está más saturada. */}
+      <p className="mb-4 text-center text-sm text-[#B3995D] font-bold max-w-xs">
+        Guárdala en tus Fotos: así la muestras en la entrada aunque te quedes sin señal.
+      </p>
+
       {/* Botones */}
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
@@ -287,8 +296,9 @@ export default function TarjetaPage() {
         </p>
       )}
 
-      <p className="mt-6 text-gray-400 text-sm text-center">
-        Muestra el QR en cada visita al club para acumular puntos
+      <p className="mt-6 text-gray-400 text-sm text-center max-w-xs">
+        Muestra el QR en cada visita al club para acumular puntos. Funciona
+        desde la imagen guardada, sin necesidad de internet.
       </p>
     </main>
   )
