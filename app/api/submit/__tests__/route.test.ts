@@ -16,16 +16,30 @@ jest.mock('@/lib/supabase', () => ({
 
 type Resultado = { data: unknown; error: unknown }
 
-// Guarda lo que la ruta mandó a insertar y el correo con el que buscó, para
-// poder afirmar que ambos van normalizados a minúsculas.
-const espia: { insertado?: Record<string, unknown>; buscado?: string } = {}
+// Guarda lo que la ruta mandó a insertar, el correo con el que buscó, y todos
+// los fan_id que intentó: eso último es lo que permite afirmar que al reintentar
+// genera uno distinto en vez de repetir el que ya chocó.
+const espia: {
+  insertado?: Record<string, unknown>
+  buscado?: string
+  idsIntentados: string[]
+} = { idsIntentados: [] }
 
-function clienteFalso(alta: Resultado, busqueda: Resultado = { data: null, error: null }) {
+// `alta` acepta un arreglo para simular intentos sucesivos: el primer elemento
+// responde al primer insert, el segundo al segundo, y el último se repite si la
+// ruta insiste. Así se puede probar el reintento por choque de fan_id.
+function clienteFalso(
+  alta: Resultado | Resultado[],
+  busqueda: Resultado = { data: null, error: null }
+) {
+  const cola = Array.isArray(alta) ? [...alta] : [alta]
   return {
     from: () => ({
       insert: (fila: Record<string, unknown>) => {
         espia.insertado = fila
-        return { select: () => ({ single: async () => alta }) }
+        espia.idsIntentados.push(String(fila.fan_id))
+        const respuesta = cola.length > 1 ? cola.shift()! : cola[0]
+        return { select: () => ({ single: async () => respuesta }) }
       },
       select: () => ({
         eq: (_col: string, valor: string) => {
@@ -44,6 +58,7 @@ function clienteFalso(alta: Resultado, busqueda: Resultado = { data: null, error
 beforeEach(() => {
   delete espia.insertado
   delete espia.buscado
+  espia.idsIntentados = []
 })
 
 function peticion(body: unknown) {
@@ -161,12 +176,73 @@ describe('POST /api/submit', () => {
         data: null,
         error: {
           code: '23505',
-          message: 'duplicate key value violates unique constraint "fans_fan_id_key"',
+          message: 'duplicate key value violates unique constraint "fans_member_number_key"',
         },
       })
     )
 
     const res = await POST(peticion(fanValido))
     expect(res.status).toBe(500)
+    // Un choque que no es de fan_id no se reintenta: generar otro id no lo
+    // arreglaría, así que se responde de una vez.
+    expect(espia.idsIntentados).toHaveLength(1)
+  })
+
+  // El fan_id se generaba con `NEL-${Date.now()}` y la tabla tiene UNIQUE(fan_id):
+  // dos altas en el mismo milisegundo chocaban y la segunda moría con un 500,
+  // dejando además la foto huérfana en Storage. Con el QR proyectado y todos
+  // registrándose a la vez, eso pasaba con frecuencia.
+  const choqueDeFanId = {
+    data: null,
+    error: {
+      code: '23505',
+      message: 'duplicate key value violates unique constraint "fans_fan_id_key"',
+    },
+  }
+
+  it('el fan_id lleva sufijo aleatorio, no solo el timestamp', async () => {
+    mockClient.mockReturnValue(clienteFalso({ data: { member_number: 9 }, error: null }))
+
+    const res = await POST(peticion(fanValido))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.fanId).toMatch(/^NEL-\d+-[0-9a-f]{8}$/)
+  })
+
+  it('dos altas seguidas nunca reciben el mismo fan_id', async () => {
+    mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
+
+    const a = await (await POST(peticion(fanValido))).json()
+    const b = await (await POST(peticion(fanValido))).json()
+
+    expect(a.fanId).not.toBe(b.fanId)
+  })
+
+  it('reintenta con otro fan_id cuando el primero ya existe', async () => {
+    mockClient.mockReturnValue(
+      clienteFalso([choqueDeFanId, { data: { member_number: 55 }, error: null }])
+    )
+
+    const res = await POST(peticion(fanValido))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.memberNumber).toBe(55)
+    expect(espia.idsIntentados).toHaveLength(2)
+    // Lo importante: el reintento usa un id nuevo, no repite el que ya chocó.
+    expect(espia.idsIntentados[0]).not.toBe(espia.idsIntentados[1])
+    expect(json.fanId).toBe(espia.idsIntentados[1])
+  })
+
+  it('se rinde con 500 si el fan_id sigue chocando', async () => {
+    mockClient.mockReturnValue(clienteFalso(choqueDeFanId))
+
+    const res = await POST(peticion(fanValido))
+
+    expect(res.status).toBe(500)
+    // Reintenta un número acotado de veces en vez de quedarse en ciclo.
+    expect(espia.idsIntentados).toHaveLength(3)
+    expect(new Set(espia.idsIntentados).size).toBe(3)
   })
 })
