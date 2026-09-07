@@ -45,6 +45,32 @@ Tablas en `public`: `fans`, `staff`, `visits`, `rewards`, `fan_rewards`,
 (en desuso: se conserva por los registros viejos, ya no se escribe ni se lee),
 `ano_registro`, `created_at`.
 
+Restricciones `UNIQUE` en `fans`: `fan_id`, `email` y `member_number`. La clave
+primaria es `id`, que la app no usa. Las tres importan porque el alta las choca
+en la práctica y `/api/submit` distingue entre ellas por el nombre de la
+restricción en el mensaje de error.
+
+### Formato del `fan_id`
+
+    NEL-<timestamp en ms>-<8 hex>      p. ej. NEL-1788729281989-a3f1c2d0
+
+**El sufijo aleatorio no es decorativo.** Antes el id era solo
+`NEL-${Date.now()}`, y con `UNIQUE (fan_id)` dos altas en el mismo milisegundo
+chocaban: la segunda moría con un 500 genérico, el socio perdía su registro y
+su foto quedaba huérfana en Storage. Con la gente llegando de a poco el riesgo
+era del 0.3%, pero proyectando el QR para que todos se registren a la vez —100
+personas en 10 segundos— subía al 39%. El timestamp se conserva porque se lee
+bien y ordena por antigüedad.
+
+Como respaldo, `/api/submit` reintenta hasta 3 veces con un id nuevo si choca
+`fans_fan_id_key`. Cualquier otro choque se responde de una vez: generar otro
+id no lo arreglaría.
+
+**Los ids viejos (`NEL-<timestamp>`, sin sufijo) siguen siendo válidos** y no
+se migraron. Cualquier código que toque `fan_id` debe tratarlo como texto
+opaco, sin asumir largo ni número de guiones. El `fan_id` no se muestra en la
+tarjeta —ahí va `member_number`—, solo viaja en el QR y en las URLs.
+
 Buckets de Storage, ambos públicos:
 
 - `fan-photos` — foto del fan, límite 5 MB, JPEG/PNG/WebP/HEIC/HEIF
