@@ -32,6 +32,51 @@ function choqueDe(error: unknown, restriccion: string): boolean {
   return e?.code === '23505' && String(e?.message ?? '').includes(restriccion)
 }
 
+const BUCKET_FOTOS = 'fan-photos'
+
+/**
+ * Borra la foto que se acaba de subir cuando el alta no prosperó.
+ *
+ * El formulario sube la foto y luego guarda los datos. Si lo segundo falla
+ * —correo repetido es el caso frecuente, y no es siquiera un error— la foto
+ * ya está en Storage y nadie la va a referenciar nunca: ocupa espacio que no
+ * se puede reclamar porque no hay forma de saber a quién pertenecía.
+ *
+ * Es best-effort: si la limpieza falla, el socio igual recibe su respuesta.
+ * Una foto de más pesa 337 KB; dejar al socio sin saber qué pasó cuesta más.
+ */
+async function borrarFotoHuerfana(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  urlFoto: unknown
+): Promise<void> {
+  try {
+    if (typeof urlFoto !== 'string') return
+
+    const marca = `/${BUCKET_FOTOS}/`
+    const corte = urlFoto.indexOf(marca)
+    if (corte === -1) return
+
+    const nombre = decodeURIComponent(urlFoto.slice(corte + marca.length))
+    if (!nombre || nombre.includes('/')) return
+
+    // Nunca borrar una foto en uso. urlFoto llega del cliente, así que podría
+    // apuntar a la de otro socio: sin esta comprobación, una petición armada a
+    // mano borraría la foto de alguien más y su tarjeta ya no se podría rearmar.
+    const { data: enUso } = await supabase
+      .from('fans')
+      .select('fan_id')
+      .eq('foto_url', urlFoto)
+      .limit(1)
+      .maybeSingle()
+
+    if (enUso) return
+
+    await supabase.storage.from(BUCKET_FOTOS).remove([nombre])
+  } catch {
+    // Silencio a propósito: la limpieza nunca debe tumbar la respuesta al socio.
+  }
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { nombre, email, fanDesde, urlFoto } = body
@@ -95,11 +140,17 @@ export async function POST(req: NextRequest) {
         .limit(1)
         .maybeSingle()
 
+      // El socio ya tenía membresía, así que la foto que acaba de subir no la
+      // va a usar nadie. Es el camino por el que más huérfanas se acumulan.
+      await borrarFotoHuerfana(supabase, urlFoto)
+
       return NextResponse.json(
         { error: 'ya-registrado', fanId: existente?.fan_id ?? null },
         { status: 409 }
       )
     }
+
+    await borrarFotoHuerfana(supabase, urlFoto)
 
     return NextResponse.json({ error: (error as ErrorPostgres).message }, { status: 500 })
   }

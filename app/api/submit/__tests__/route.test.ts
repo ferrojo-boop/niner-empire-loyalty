@@ -23,14 +23,19 @@ const espia: {
   insertado?: Record<string, unknown>
   buscado?: string
   idsIntentados: string[]
-} = { idsIntentados: [] }
+  fotosBorradas: string[]
+} = { idsIntentados: [], fotosBorradas: [] }
 
 // `alta` acepta un arreglo para simular intentos sucesivos: el primer elemento
 // responde al primer insert, el segundo al segundo, y el último se repite si la
 // ruta insiste. Así se puede probar el reintento por choque de fan_id.
+//
+// `fotoEnUso` responde a la consulta por foto_url que hace la limpieza antes de
+// borrar: con data distinta de null, la foto pertenece a alguien y no se toca.
 function clienteFalso(
   alta: Resultado | Resultado[],
-  busqueda: Resultado = { data: null, error: null }
+  busqueda: Resultado = { data: null, error: null },
+  fotoEnUso: Resultado = { data: null, error: null }
 ) {
   const cola = Array.isArray(alta) ? [...alta] : [alta]
   return {
@@ -42,16 +47,27 @@ function clienteFalso(
         return { select: () => ({ single: async () => respuesta }) }
       },
       select: () => ({
-        eq: (_col: string, valor: string) => {
-          espia.buscado = valor
+        // La ruta consulta por 'email' (buscar la membresía existente) y por
+        // 'foto_url' (comprobar si la foto está en uso antes de borrarla).
+        eq: (columna: string, valor: string) => {
+          const resultado = columna === 'foto_url' ? fotoEnUso : busqueda
+          if (columna !== 'foto_url') espia.buscado = valor
+          const maybeSingle = async () => resultado
           return {
-            order: () => ({
-              limit: () => ({ maybeSingle: async () => busqueda }),
-            }),
+            order: () => ({ limit: () => ({ maybeSingle }) }),
+            limit: () => ({ maybeSingle }),
           }
         },
       }),
     }),
+    storage: {
+      from: () => ({
+        remove: async (nombres: string[]) => {
+          espia.fotosBorradas.push(...nombres)
+          return { data: null, error: null }
+        },
+      }),
+    },
   }
 }
 
@@ -59,6 +75,7 @@ beforeEach(() => {
   delete espia.insertado
   delete espia.buscado
   espia.idsIntentados = []
+  espia.fotosBorradas = []
 })
 
 function peticion(body: unknown) {
@@ -244,5 +261,80 @@ describe('POST /api/submit', () => {
     // Reintenta un número acotado de veces en vez de quedarse en ciclo.
     expect(espia.idsIntentados).toHaveLength(3)
     expect(new Set(espia.idsIntentados).size).toBe(3)
+  })
+
+  // El formulario sube la foto y luego guarda los datos. Si lo segundo no
+  // prospera, la foto queda en Storage sin que ningún socio la referencie: no
+  // hay forma de saber a quién era, así que ocupa espacio para siempre.
+  describe('limpieza de la foto cuando el alta no prospera', () => {
+    const fotoSubida = 'https://x.supabase.co/storage/v1/object/public/fan-photos/1788-luis.jpg'
+    const conFoto = { ...fanValido, urlFoto: fotoSubida }
+
+    const choqueDeCorreo = {
+      data: null,
+      error: {
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "fans_email_key"',
+      },
+    }
+
+    it('borra la foto cuando el correo ya estaba registrado', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso(choqueDeCorreo, { data: { fan_id: 'NEL-1' }, error: null })
+      )
+
+      const res = await POST(peticion(conFoto))
+
+      expect(res.status).toBe(409)
+      expect(espia.fotosBorradas).toEqual(['1788-luis.jpg'])
+    })
+
+    it('borra la foto cuando el alta falla de verdad', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso({ data: null, error: { code: '08006', message: 'connection failure' } })
+      )
+
+      const res = await POST(peticion(conFoto))
+
+      expect(res.status).toBe(500)
+      expect(espia.fotosBorradas).toEqual(['1788-luis.jpg'])
+    })
+
+    it('no borra nada cuando el alta sí prospera', async () => {
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 3 }, error: null }))
+
+      const res = await POST(peticion(conFoto))
+
+      expect(res.status).toBe(200)
+      expect(espia.fotosBorradas).toEqual([])
+    })
+
+    // urlFoto llega del cliente. Sin esta guarda, una petición armada a mano con
+    // la foto de otro socio la borraría y su tarjeta ya no se podría rearmar.
+    it('no borra una foto que otro socio está usando', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso(
+          choqueDeCorreo,
+          { data: { fan_id: 'NEL-1' }, error: null },
+          { data: { fan_id: 'NEL-victima' }, error: null }
+        )
+      )
+
+      const res = await POST(peticion(conFoto))
+
+      expect(res.status).toBe(409)
+      expect(espia.fotosBorradas).toEqual([])
+    })
+
+    it('ignora una url que no apunta al bucket de fotos', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso(choqueDeCorreo, { data: { fan_id: 'NEL-1' }, error: null })
+      )
+
+      const res = await POST(peticion({ ...fanValido, urlFoto: 'https://otro-sitio.com/x.jpg' }))
+
+      expect(res.status).toBe(409)
+      expect(espia.fotosBorradas).toEqual([])
+    })
   })
 })
