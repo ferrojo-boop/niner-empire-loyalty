@@ -572,7 +572,8 @@
 .venue-section .block-inner { position: relative; z-index: 2; }
 .venue-card {
   display: grid;
-  grid-template-columns: auto 1fr;
+  /* pin | datos | botón. La regla de 720px lo colapsa a una sola columna. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 32px;
   background: linear-gradient(120deg, rgba(170,0,0,0.32), rgba(179,153,93,0.12));

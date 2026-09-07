@@ -1,5 +1,14 @@
-import { PinIcon } from './icons'
+import { ArrowUpRightIcon, PinIcon } from './icons'
 import { VenueCountdown } from './VenueCountdown'
+
+// El nombre del lugar dice "Polanco", pero el domicilio real está en la colonia
+// Anáhuac I Sección. Se muestran los dos para que nadie busque en la colonia
+// equivocada, y el botón lleva a la ficha exacta en Google Maps.
+const SEDE = {
+  nombre: 'Pinche Gringo BBQ Warehouse — Polanco',
+  domicilio: 'Lago Iseo 296, Anáhuac I Secc., Miguel Hidalgo, 11320, Ciudad de México',
+  mapa: 'https://maps.app.goo.gl/tJA4wACcPyknsoUw6',
+}
 
 export function Venue() {
   return (
@@ -16,9 +25,19 @@ export function Venue() {
             <PinIcon size={28} />
           </div>
           <div className="venue-info">
-            <h3>Por confirmar</h3>
+            <h3>{SEDE.nombre}</h3>
+            <p className="venue-address">{SEDE.domicilio}</p>
             <VenueCountdown />
           </div>
+          <a
+            className="venue-cta"
+            href={SEDE.mapa}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Cómo llegar
+            <ArrowUpRightIcon size={16} />
+          </a>
         </div>
       </div>
     </section>
