@@ -89,6 +89,34 @@ El candado de staff vive en el servidor (`lib/requireStaff.ts`): valida el
 Bearer token contra Supabase Auth y exige que el usuario esté en `staff` con
 `activo = true`. No confiar en la interfaz para esto.
 
+### El alta borra la foto si no prospera
+
+El registro son dos llamadas seguidas: `/api/upload-photo` y luego
+`/api/submit`. Si la segunda no termina en alta, la foto ya está en Storage y
+ninguna fila la referencia —no hay forma de saber de quién era—, así que
+ocupa espacio que nadie puede reclamar. Por eso **los dos caminos que no
+terminan en alta borran la foto recién subida**: el 500 y también el 409 de
+correo repetido, que ni siquiera es un error y es por donde más se acumulaban.
+
+⚠️ **La limpieza comprueba antes que ninguna fila use esa foto, y esa guarda
+no se puede quitar.** `urlFoto` llega del cliente: sin la comprobación, una
+petición armada a mano con la foto de otro socio la borraría y su tarjeta ya
+no se podría reconstruir. La foto es el único archivo irreemplazable por
+miembro (ver Capacidad).
+
+Es best-effort y nunca tumba la respuesta: una foto de más cuesta 337 KB,
+dejar al socio sin saber qué pasó cuesta más.
+
+Queda un caso sin cubrir: si el navegador muere **entre** las dos llamadas, esa
+foto sigue quedando huérfana. No hay barrido automático a propósito —un bug
+ahí borraría fotos reales— pero se detectan con:
+
+```sql
+select o.name from storage.objects o
+where o.bucket_id = 'fan-photos'
+  and not exists (select 1 from public.fans f where f.foto_url like '%' || o.name);
+```
+
 ## Capacidad: el plan gratuito de Supabase
 
 **La tarjeta no se archiva.** `/tarjeta/[fanId]` la rearma en el navegador cada
