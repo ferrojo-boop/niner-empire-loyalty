@@ -1,5 +1,4 @@
 import { ArrowUpRightIcon, PinIcon } from './icons'
-import { VenueCountdown } from './VenueCountdown'
 
 // El nombre del lugar dice "Polanco", pero el domicilio real está en la colonia
 // Anáhuac I Sección. Se muestran los dos para que nadie busque en la colonia
@@ -27,7 +26,6 @@ export function Venue() {
           <div className="venue-info">
             <h3>{SEDE.nombre}</h3>
             <p className="venue-address">{SEDE.domicilio}</p>
-            <VenueCountdown />
           </div>
           <a
             className="venue-cta"
