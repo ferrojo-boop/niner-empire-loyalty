@@ -89,6 +89,35 @@ Buckets de Storage, ambos públicos:
 - `fan-cards` — **en desuso.** Guardaba la tarjeta rasterizada; ya nada escribe
   ahí ni lee de ahí. Solo conserva las tarjetas de los primeros registros.
 
+⚠️ **`storage.objects` no debe tener políticas para el rol público.** Hasta el
+2026-09-07 existían dos que sobraban y abrían el bucket a cualquiera que sacara
+la llave anon del navegador:
+
+- `Allow upload to fan photos` — permitía **subir archivos sin autenticarse**
+  (comprobado: se subió un JPEG anónimo con URL pública).
+- `Public read access for fan photos` — permitía **listar el bucket**, y los
+  nombres de archivo llevan el nombre del socio: se podía enumerar y descargar
+  la foto de todos.
+
+Ninguna hacía falta. Las fotos se sirven por `/object/public/...`, que en un
+bucket con `public = true` **no pasa por RLS**, y todo lo que escribe la app va
+por `/api/upload-photo` con `service_role`, que **ignora RLS**. Las políticas
+solo habilitaban la API autenticada, que es por donde entraba el abuso.
+
+Si alguna vez hay que revertirlo, eran:
+
+```sql
+create policy "Allow upload to fan photos" on storage.objects
+  for insert to public with check (bucket_id = 'fan-photos');
+create policy "Public read access for fan photos" on storage.objects
+  for select to public using (bucket_id = 'fan-photos');
+```
+
+Las tablas de `public` tienen RLS activo **y cero políticas**, que en Postgres
+significa negar todo salvo a `service_role`. Comprobado con la llave anon: cero
+filas en las seis tablas y `42501` al intentar escribir. **No agregar políticas
+ahí**: la app entra siempre por rutas de servidor.
+
 ## Rutas
 
 Páginas: `/` (registro), `/tarjeta/[fanId]`, `/checkin/[fanId]`, `/recuperar`,
