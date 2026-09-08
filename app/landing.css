@@ -581,13 +581,16 @@
   border-radius: 20px;
   padding: 34px;
 }
-.venue-pin {
+/* Logo de la sede. Sustituye al pin genérico: el SVG ya es un círculo, así que
+   no necesita el fondo dorado que el pin usaba para recortar el icono. */
+.venue-logo {
   flex-shrink: 0;
-  width: 62px; height: 62px;
-  border-radius: 999px;
-  background: var(--niners-gold);
-  color: var(--niners-ink);
-  display: flex; align-items: center; justify-content: center;
+  display: block;
+  width: 72px;
+  height: 72px;
+  /* El SVG mide 200x204, no es cuadrado: sin contain se aplastaría un 2% al
+     forzarlo a una caja cuadrada. Poco, pero es un logo de marca. */
+  object-fit: contain;
 }
 .venue-info h3 {
   font-family: var(--font-display);
@@ -684,7 +687,7 @@
 
 @media (max-width: 720px) {
   .venue-card { grid-template-columns: 1fr; text-align: center; }
-  .venue-pin { margin: 0 auto; }
+  .venue-logo { margin: 0 auto; }
   .venue-hours { align-items: center; }
   .venue-hours li { flex-direction: column; gap: 0; align-items: center; }
   .venue-cta { margin: 0 auto; }
