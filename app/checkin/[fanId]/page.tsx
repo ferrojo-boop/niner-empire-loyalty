@@ -88,7 +88,7 @@ export default function CheckinPage() {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center gap-4 bg-[#1A1A1A] px-6" role="alert">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/NinerEmpireMXok.png" alt="Niner Empire México" className="w-32 h-auto" />
+        <img src="/logo-niner-empire-2026.webp" alt="Niner Empire México" className="w-32 h-auto" />
         <XCircleIcon size={56} className="text-red-400" />
         <h1 className="text-red-400 text-2xl font-black text-center">Tarjeta no encontrada</h1>
         <p className="text-gray-400 text-center">Verifica que el código QR sea de una membresía vigente.</p>
@@ -103,7 +103,7 @@ export default function CheckinPage() {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center gap-5 bg-[#1A1A1A] px-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/NinerEmpireMXok.png" alt="Niner Empire México" className="w-32 h-auto" />
+        <img src="/logo-niner-empire-2026.webp" alt="Niner Empire México" className="w-32 h-auto" />
         <CheckCircleIcon size={56} className="text-[#B3995D]" />
         <h1 className="text-[#B3995D] text-2xl font-black text-center tracking-wide uppercase">
           Membresía válida
@@ -127,7 +127,7 @@ export default function CheckinPage() {
   return (
     <main className={`min-h-dvh flex flex-col items-center justify-center gap-5 px-6 ${isRepeat ? 'bg-[#7A5200]' : 'bg-[#AA0000]'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/NinerEmpireMXok.png" alt="Niner Empire México" className="w-32 h-auto" />
+      <img src="/logo-niner-empire-2026.webp" alt="Niner Empire México" className="w-32 h-auto" />
       {isRepeat ? (
         <WarningIcon size={56} className="text-white" />
       ) : (

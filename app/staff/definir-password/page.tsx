@@ -103,7 +103,7 @@ export default function DefinirPasswordPage() {
       <main className="staff-page">
         <div className="staff-card" style={{ alignItems: 'center', textAlign: 'center' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="staff-crest" src="/NinerEmpireMXok.png" alt="Niner Empire México" />
+          <img className="staff-crest" src="/logo-niner-empire-2026.webp" alt="Niner Empire México" />
           <h1>Enlace no válido</h1>
           <p className="staff-lead">
             Este enlace ya se usó o expiró. Pide al administrador del club que te envíe una
@@ -121,7 +121,7 @@ export default function DefinirPasswordPage() {
     <main className="staff-page">
       <form className="staff-card" onSubmit={handleSubmit}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="staff-crest" src="/NinerEmpireMXok.png" alt="Niner Empire México" />
+        <img className="staff-crest" src="/logo-niner-empire-2026.webp" alt="Niner Empire México" />
         <h1>Define tu contraseña</h1>
         <p className="staff-lead">Con ella entrarás a registrar visitas del club.</p>
 

@@ -11,7 +11,7 @@ export function Hero() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="crest"
-            src="/NinerEmpireMXok.png"
+            src="/logo-niner-empire-2026.webp"
             alt="Niner Empire México — Official Chapter México City"
           />
           <div className="hero-tagline">

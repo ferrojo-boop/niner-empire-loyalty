@@ -45,7 +45,7 @@ export default function RecuperarPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="recover-crest"
-          src="/NinerEmpireMXok.png"
+          src="/logo-niner-empire-2026.webp"
           alt="Niner Empire México"
         />
 
