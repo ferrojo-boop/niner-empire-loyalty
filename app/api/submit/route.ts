@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { verificarTurnstile, ipDelVisitante } from '@/lib/turnstile'
 
 // Cuántas veces se reintenta el alta si el fan_id ya existe. Con el sufijo
 // aleatorio un choque es casi imposible, así que esto es cinturón y tirantes:
@@ -85,6 +86,17 @@ export async function POST(req: NextRequest) {
 
   if (!nombre || !email || !fanDesde || !urlFoto) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  // El candado antibot vive aquí y no en el widget: un bot no ejecuta el widget,
+  // llama esta ruta directo. Se comprueba antes de tocar la base para que un
+  // registro automatizado no consuma folio ni escriba nada.
+  const turnstile = await verificarTurnstile(body.turnstileToken, ipDelVisitante(req.headers))
+  if (!turnstile.ok) {
+    return NextResponse.json(
+      { error: 'No pudimos verificar que eres una persona. Recarga la página e inténtalo de nuevo.' },
+      { status: 403 }
+    )
   }
 
   const supabase = getSupabaseAdmin()

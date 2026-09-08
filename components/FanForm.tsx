@@ -27,6 +27,7 @@ export function FanForm() {
   const [data, setData] = useState<FanFormData>(initialData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<SubmitError | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   function handleChange(partial: Partial<FanFormData>) {
     setData((prev) => ({ ...prev, ...partial }))
@@ -64,6 +65,7 @@ export function FanForm() {
           fanDesde: data.fanDesde,
           jugadorFavorito: data.jugadorFavorito,
           urlFoto: url,
+          turnstileToken,
         }),
       })
       // El correo ya tenía membresía. No es un fallo que se arregle
@@ -132,6 +134,7 @@ export function FanForm() {
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           error={error}
+          onTurnstileToken={setTurnstileToken}
         />
       )}
 

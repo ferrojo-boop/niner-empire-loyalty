@@ -263,6 +263,64 @@ describe('POST /api/submit', () => {
     expect(new Set(espia.idsIntentados).size).toBe(3)
   })
 
+  // El widget del navegador no protege nada: un bot llama esta ruta directo.
+  // Lo que protege es que el servidor exija un token que solo Cloudflare emite.
+  describe('candado antibot', () => {
+    const original = process.env.TURNSTILE_SECRET_KEY
+    afterEach(() => {
+      // Asignar undefined guardaría la cadena "undefined", que es truthy y
+      // dejaría la protección encendida para las pruebas siguientes.
+      if (original === undefined) delete process.env.TURNSTILE_SECRET_KEY
+      else process.env.TURNSTILE_SECRET_KEY = original
+      jest.restoreAllMocks()
+    })
+
+    it('rechaza con 403 el registro sin token cuando la protección está activa', async () => {
+      process.env.TURNSTILE_SECRET_KEY = 'secreto'
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
+
+      const res = await POST(peticion(fanValido)) // sin turnstileToken
+
+      expect(res.status).toBe(403)
+      // Lo importante: no llegó a tocar la base ni a consumir folio.
+      expect(espia.idsIntentados).toHaveLength(0)
+    })
+
+    it('rechaza con 403 el token que Cloudflare reprueba', async () => {
+      process.env.TURNSTILE_SECRET_KEY = 'secreto'
+      global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: false }) }) as unknown as typeof fetch
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
+
+      const res = await POST(peticion({ ...fanValido, turnstileToken: 'inventado' }))
+
+      expect(res.status).toBe(403)
+      expect(espia.idsIntentados).toHaveLength(0)
+    })
+
+    it('deja pasar el token que Cloudflare aprueba', async () => {
+      process.env.TURNSTILE_SECRET_KEY = 'secreto'
+      global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: true }) }) as unknown as typeof fetch
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 77 }, error: null }))
+
+      const res = await POST(peticion({ ...fanValido, turnstileToken: 'bueno' }))
+      const json = await res.json()
+
+      expect(res.status).toBe(200)
+      expect(json.memberNumber).toBe(77)
+    })
+
+    // Sin la variable configurada no se bloquea nada: así el despliegue puede ir
+    // antes que el secreto sin dejar el registro caído.
+    it('no bloquea si la protección no está configurada', async () => {
+      delete process.env.TURNSTILE_SECRET_KEY
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 5 }, error: null }))
+
+      const res = await POST(peticion(fanValido))
+
+      expect(res.status).toBe(200)
+    })
+  })
+
   // El formulario sube la foto y luego guarda los datos. Si lo segundo no
   // prospera, la foto queda en Storage sin que ningún socio la referencie: no
   // hay forma de saber a quién era, así que ocupa espacio para siempre.

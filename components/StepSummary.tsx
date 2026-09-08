@@ -2,6 +2,7 @@
 
 import { FanFormData, SubmitError } from '@/lib/types'
 import { EditIcon, SpinnerIcon } from './icons'
+import { TurnstileWidget } from './TurnstileWidget'
 
 interface StepSummaryProps {
   data: FanFormData
@@ -10,9 +11,10 @@ interface StepSummaryProps {
   onSubmit: () => void
   isSubmitting: boolean
   error: SubmitError | null
+  onTurnstileToken: (token: string | null) => void
 }
 
-export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitting, error }: StepSummaryProps) {
+export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitting, error, onTurnstileToken }: StepSummaryProps) {
   return (
     <div className="flex flex-col gap-6 items-center">
       <h2 className="text-2xl font-black text-[var(--niners-cream)] text-center">
@@ -70,6 +72,10 @@ export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitt
         </a>
         .
       </p>
+
+      {/* Va justo antes del botón: para cuando el socio llega aquí, el widget
+          ya resolvió y el token está listo, sin hacerlo esperar. */}
+      <TurnstileWidget onToken={onTurnstileToken} />
 
       <button
         onClick={onSubmit}
