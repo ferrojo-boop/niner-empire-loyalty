@@ -3,22 +3,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { StarIcon, XIcon, CheckIcon } from './icons'
 
+// `items` no lo usa ningún beneficio hoy —los de descuentos y coleccionables se
+// retiraron— pero se conserva el soporte: es una capacidad de la lista, y volver
+// a mostrar viñetas es solo agregar el campo.
 const BENEFITS: { title: string; body: ReactNode; items?: string[] }[] = [
-  {
-    title: 'Descuentos en negocios afiliados',
-    body: 'Muestra tu tarjeta digital y obtén descuentos exclusivos:',
-    items: [
-      'PGBBQ — descuento especial para miembros',
-      'Hard Rock Café Mexico City — descuento especial para miembros',
-      'Wyndham Hotel WTC — tarifa preferente en hospedaje',
-      'Y más aliados sumándose esta temporada…',
-    ],
-  },
-  {
-    title: 'Coleccionables de edición limitada',
-    body: 'NO SE COMPRAN, SE GANAN. Asiste a las Watch Party 2026, muestra tu QR al staff, registra tu visita con el QR y desbloquea los 3 pines magnéticos de la temporada.',
-    items: ['Pin No. 1 — al llegar a 5 visitas', 'Pin No. 2 — al llegar a 10 visitas', 'Pin No. 3 — al llegar a 15 visitas'],
-  },
   {
     title: 'Sorteos',
     body: 'Rifas de mercancía y contenido reservado solo para miembros registrados.',
