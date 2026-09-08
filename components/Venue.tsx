@@ -5,7 +5,10 @@ import { ArrowUpRightIcon } from './icons'
 // equivocada, y el botón lleva a la ficha exacta en Google Maps.
 const SEDE = {
   nombre: 'Pinche Gringo BBQ Warehouse — Polanco',
-  logo: '/PGBBQlogo_header.svg',
+  // Alojado en Cloudinary para poder reemplazarlo sin desplegar. El archivo
+  // original sigue en public/PGBBQlogo_header.svg —es idéntico— por si conviene
+  // volver a servirlo desde el mismo origen.
+  logo: 'https://res.cloudinary.com/dv3rvkvi1/image/upload/v1788826277/PGBBQlogo_header_fwlhko.svg',
   domicilio: 'Lago Iseo 296, Anáhuac I Secc., Miguel Hidalgo, 11320, Ciudad de México',
   mapa: 'https://maps.app.goo.gl/tJA4wACcPyknsoUw6',
 }
