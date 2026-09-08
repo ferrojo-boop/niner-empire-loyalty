@@ -210,6 +210,30 @@ registros falsos). Un token presente pero inválido se rechaza siempre.
 Variables: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (pública) y `TURNSTILE_SECRET_KEY`
 (sensible, solo en Vercel).
 
+### Contraseñas del staff
+
+La cuenta de staff es la credencial más sensible del proyecto: es la que
+registra asistencias. `lib/politicaPassword.ts` exige 12 caracteres con
+mayúscula, minúscula, número y símbolo, y muestra los requisitos en vivo.
+
+⚠️ **Esa validación es del navegador y se puede evadir llamando la API. La que
+manda es la de Supabase**, en Authentication → Sign In / Providers → Email:
+
+| Ajuste | Debe estar en |
+|---|---|
+| Minimum password length | `12` |
+| Required characters | dígitos + minúsculas + mayúsculas + símbolos |
+
+Si se cambia el mínimo en el código hay que cambiarlo ahí también: una copia más
+floja que la del servidor haría ver todo en verde y aun así ser rechazado.
+
+**Leaked password protection (HaveIBeenPwned) requiere plan Pro** y está
+apagada a propósito — el proyecto corre en plan gratuito. Aparece como WARN en
+`get_advisors`; es un pendiente conocido, no un descuido.
+
+Endurecer la política **no deja fuera a quien ya tiene contraseña**: Supabase
+lo deja entrar y solo la marca como débil.
+
 ### El trivia no es seguridad
 
 `StepTrivia` tiene la respuesta correcta en el código del navegador y ningún
