@@ -12,9 +12,10 @@ interface StepSummaryProps {
   isSubmitting: boolean
   error: SubmitError | null
   onTurnstileToken: (token: string | null) => void
+  reinicioTurnstile: number
 }
 
-export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitting, error, onTurnstileToken }: StepSummaryProps) {
+export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitting, error, onTurnstileToken, reinicioTurnstile }: StepSummaryProps) {
   return (
     <div className="flex flex-col gap-6 items-center">
       <h2 className="text-2xl font-black text-[var(--niners-cream)] text-center">
@@ -75,7 +76,7 @@ export function StepSummary({ data, onEditData, onEditPhoto, onSubmit, isSubmitt
 
       {/* Va justo antes del botón: para cuando el socio llega aquí, el widget
           ya resolvió y el token está listo, sin hacerlo esperar. */}
-      <TurnstileWidget onToken={onTurnstileToken} />
+      <TurnstileWidget onToken={onTurnstileToken} reiniciarEn={reinicioTurnstile} />
 
       <button
         onClick={onSubmit}

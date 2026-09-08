@@ -35,7 +35,10 @@ const espia: {
 function clienteFalso(
   alta: Resultado | Resultado[],
   busqueda: Resultado = { data: null, error: null },
-  fotoEnUso: Resultado = { data: null, error: null }
+  fotoEnUso: Resultado = { data: null, error: null },
+  // Nombres presentes en el bucket. Por defecto está el de fanValido, que es lo
+  // normal: el socio acaba de subir su foto en la llamada anterior.
+  enElBucket: string[] = [FOTO_SUBIDA]
 ) {
   const cola = Array.isArray(alta) ? [...alta] : [alta]
   return {
@@ -66,6 +69,12 @@ function clienteFalso(
           espia.fotosBorradas.push(...nombres)
           return { data: null, error: null }
         },
+        list: async (_ruta: string, opts?: { search?: string }) => ({
+          data: enElBucket
+            .filter((n) => !opts?.search || n.includes(opts.search))
+            .map((name) => ({ name })),
+          error: null,
+        }),
       }),
     },
   }
@@ -86,12 +95,17 @@ function peticion(body: unknown) {
   })
 }
 
+// La foto tiene que venir del bucket: /api/submit exige que exista y que no la
+// use otro socio, que es lo que ata el registro al token que se gastó al subir.
+const FOTO_SUBIDA = '1788-fernando.jpg'
+const URL_FOTO = `https://x.supabase.co/storage/v1/object/public/fan-photos/${FOTO_SUBIDA}`
+
 const fanValido = {
   nombre: 'Fernando Rojo',
   email: 'fer@example.com',
   whatsapp: '+521234567890',
   fanDesde: 1995,
-  urlFoto: 'https://example.com/photo.jpg',
+  urlFoto: URL_FOTO,
 }
 
 describe('POST /api/submit', () => {
@@ -296,57 +310,49 @@ describe('POST /api/submit', () => {
     })
   })
 
-  // El widget del navegador no protege nada: un bot llama esta ruta directo.
-  // Lo que protege es que el servidor exija un token que solo Cloudflare emite.
-  describe('candado antibot', () => {
-    const original = process.env.TURNSTILE_SECRET_KEY
-    afterEach(() => {
-      // Asignar undefined guardaría la cadena "undefined", que es truthy y
-      // dejaría la protección encendida para las pruebas siguientes.
-      if (original === undefined) delete process.env.TURNSTILE_SECRET_KEY
-      else process.env.TURNSTILE_SECRET_KEY = original
-      jest.restoreAllMocks()
-    })
-
-    it('rechaza con 403 el registro sin token cuando la protección está activa', async () => {
-      process.env.TURNSTILE_SECRET_KEY = 'secreto'
+  // El token de Turnstile se gasta en /api/upload-photo y no se puede
+  // revalidar aquí. Lo que ata las dos llamadas es exigir que la foto venga de
+  // una subida real: sin eso, un bot podría crear socios saltándose el reto.
+  describe('procedencia de la foto', () => {
+    it('rechaza una url que no apunta al bucket', async () => {
       mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
 
-      const res = await POST(peticion(fanValido)) // sin turnstileToken
-
-      expect(res.status).toBe(403)
-      // Lo importante: no llegó a tocar la base ni a consumir folio.
-      expect(espia.idsIntentados).toHaveLength(0)
-    })
-
-    it('rechaza con 403 el token que Cloudflare reprueba', async () => {
-      process.env.TURNSTILE_SECRET_KEY = 'secreto'
-      global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: false }) }) as unknown as typeof fetch
-      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
-
-      const res = await POST(peticion({ ...fanValido, turnstileToken: 'inventado' }))
+      const res = await POST(peticion({ ...fanValido, urlFoto: 'https://otro.com/x.jpg' }))
 
       expect(res.status).toBe(403)
       expect(espia.idsIntentados).toHaveLength(0)
     })
 
-    it('deja pasar el token que Cloudflare aprueba', async () => {
-      process.env.TURNSTILE_SECRET_KEY = 'secreto'
-      global.fetch = jest.fn().mockResolvedValue({ json: async () => ({ success: true }) }) as unknown as typeof fetch
-      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 77 }, error: null }))
+    it('rechaza una foto inventada que no está en el bucket', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso({ data: { member_number: 1 }, error: null }, undefined, undefined, [])
+      )
 
-      const res = await POST(peticion({ ...fanValido, turnstileToken: 'bueno' }))
-      const json = await res.json()
+      const res = await POST(peticion(fanValido))
 
-      expect(res.status).toBe(200)
-      expect(json.memberNumber).toBe(77)
+      expect(res.status).toBe(403)
+      expect(espia.idsIntentados).toHaveLength(0)
     })
 
-    // Sin la variable configurada no se bloquea nada: así el despliegue puede ir
-    // antes que el secreto sin dejar el registro caído.
-    it('no bloquea si la protección no está configurada', async () => {
-      delete process.env.TURNSTILE_SECRET_KEY
-      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 5 }, error: null }))
+    // Sin esta comprobación un bot tomaría la foto de un socio existente —son
+    // públicas por diseño— y crearía membresías sin pasar por el reto.
+    it('rechaza la foto que ya usa otro socio', async () => {
+      mockClient.mockReturnValue(
+        clienteFalso(
+          { data: { member_number: 1 }, error: null },
+          { data: null, error: null },
+          { data: { fan_id: 'NEL-otro' }, error: null }
+        )
+      )
+
+      const res = await POST(peticion(fanValido))
+
+      expect(res.status).toBe(403)
+      expect(espia.idsIntentados).toHaveLength(0)
+    })
+
+    it('acepta la foto recién subida y sin dueño', async () => {
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 21 }, error: null }))
 
       const res = await POST(peticion(fanValido))
 
@@ -358,8 +364,7 @@ describe('POST /api/submit', () => {
   // prospera, la foto queda en Storage sin que ningún socio la referencie: no
   // hay forma de saber a quién era, así que ocupa espacio para siempre.
   describe('limpieza de la foto cuando el alta no prospera', () => {
-    const fotoSubida = 'https://x.supabase.co/storage/v1/object/public/fan-photos/1788-luis.jpg'
-    const conFoto = { ...fanValido, urlFoto: fotoSubida }
+    const conFoto = { ...fanValido }
 
     const choqueDeCorreo = {
       data: null,
@@ -377,7 +382,7 @@ describe('POST /api/submit', () => {
       const res = await POST(peticion(conFoto))
 
       expect(res.status).toBe(409)
-      expect(espia.fotosBorradas).toEqual(['1788-luis.jpg'])
+      expect(espia.fotosBorradas).toEqual([FOTO_SUBIDA])
     })
 
     it('borra la foto cuando el alta falla de verdad', async () => {
@@ -388,7 +393,7 @@ describe('POST /api/submit', () => {
       const res = await POST(peticion(conFoto))
 
       expect(res.status).toBe(500)
-      expect(espia.fotosBorradas).toEqual(['1788-luis.jpg'])
+      expect(espia.fotosBorradas).toEqual([FOTO_SUBIDA])
     })
 
     it('no borra nada cuando el alta sí prospera', async () => {
@@ -400,9 +405,10 @@ describe('POST /api/submit', () => {
       expect(espia.fotosBorradas).toEqual([])
     })
 
-    // urlFoto llega del cliente. Sin esta guarda, una petición armada a mano con
-    // la foto de otro socio la borraría y su tarjeta ya no se podría rearmar.
-    it('no borra una foto que otro socio está usando', async () => {
+    // La foto de otro socio ya no llega ni a la limpieza: la comprobación de
+    // procedencia la rechaza antes. Lo que importa sigue siendo lo mismo —que
+    // no se borre una foto ajena— y por eso se afirma aquí también.
+    it('nunca borra la foto que otro socio está usando', async () => {
       mockClient.mockReturnValue(
         clienteFalso(
           choqueDeCorreo,
@@ -413,18 +419,18 @@ describe('POST /api/submit', () => {
 
       const res = await POST(peticion(conFoto))
 
-      expect(res.status).toBe(409)
+      expect(res.status).toBe(403)
       expect(espia.fotosBorradas).toEqual([])
     })
 
-    it('ignora una url que no apunta al bucket de fotos', async () => {
+    it('nunca borra a partir de una url ajena al bucket', async () => {
       mockClient.mockReturnValue(
         clienteFalso(choqueDeCorreo, { data: { fan_id: 'NEL-1' }, error: null })
       )
 
       const res = await POST(peticion({ ...fanValido, urlFoto: 'https://otro-sitio.com/x.jpg' }))
 
-      expect(res.status).toBe(409)
+      expect(res.status).toBe(403)
       expect(espia.fotosBorradas).toEqual([])
     })
   })

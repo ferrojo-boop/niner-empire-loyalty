@@ -39,6 +39,12 @@ function cargarScript(): Promise<void> {
 interface Props {
   /** Recibe el token, o null cuando expira y hay que volver a resolver. */
   onToken: (token: string | null) => void
+  /**
+   * Cambiar este número reinicia el widget y pide un token nuevo. Los tokens
+   * son de un solo uso: tras un intento fallido el que había ya está gastado, y
+   * sin esto el socio se quedaría atorado reintentando con un token muerto.
+   */
+  reiniciarEn?: number
 }
 
 /**
@@ -48,7 +54,7 @@ interface Props {
  * nada y el socio puede seguir: el candado real vive en el servidor, y ahí un
  * registro sin token se rechaza cuando la protección está encendida.
  */
-export function TurnstileWidget({ onToken }: Props) {
+export function TurnstileWidget({ onToken, reiniciarEn = 0 }: Props) {
   const contenedor = useRef<HTMLDivElement>(null)
   const onTokenRef = useRef(onToken)
   onTokenRef.current = onToken
@@ -82,7 +88,7 @@ export function TurnstileWidget({ onToken }: Props) {
       cancelado = true
       if (idWidget && window.turnstile) window.turnstile.remove(idWidget)
     }
-  }, [])
+  }, [reiniciarEn])
 
   if (!SITE_KEY) return null
 

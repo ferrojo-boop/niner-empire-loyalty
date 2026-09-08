@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { verificarTurnstile, ipDelVisitante } from '@/lib/turnstile'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -8,6 +9,22 @@ export async function POST(req: NextRequest) {
 
   if (!photo) {
     return NextResponse.json({ error: 'No photo provided' }, { status: 400 })
+  }
+
+  // El candado antibot va aquí, en la primera llamada del registro, porque es
+  // la que cuesta almacenamiento: sin esto un bot podía llenar el bucket sin
+  // llegar siquiera a crear socios. /api/submit no revalida el token —son de un
+  // solo uso— sino que exige que la foto venga de una subida real; ver
+  // lib/fotoDelBucket.ts.
+  const turnstile = await verificarTurnstile(
+    formData.get('turnstileToken'),
+    ipDelVisitante(req.headers)
+  )
+  if (!turnstile.ok) {
+    return NextResponse.json(
+      { error: 'No pudimos verificar que eres una persona. Recarga la página e inténtalo de nuevo.' },
+      { status: 403 }
+    )
   }
 
   const supabase = getSupabaseAdmin()

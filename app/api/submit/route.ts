@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { verificarTurnstile, ipDelVisitante } from '@/lib/turnstile'
+import { fotoRecienSubida } from '@/lib/fotoDelBucket'
 import { anoValido, mensajeAnoInvalido } from '@/lib/fanDesde'
 
 // Cuántas veces se reintenta el alta si el fan_id ya existe. Con el sufijo
@@ -97,18 +97,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: mensajeAnoInvalido() }, { status: 400 })
   }
 
-  // El candado antibot vive aquí y no en el widget: un bot no ejecuta el widget,
-  // llama esta ruta directo. Se comprueba antes de tocar la base para que un
-  // registro automatizado no consuma folio ni escriba nada.
-  const turnstile = await verificarTurnstile(body.turnstileToken, ipDelVisitante(req.headers))
-  if (!turnstile.ok) {
+  const supabase = getSupabaseAdmin()
+
+  // El token de Turnstile ya se gastó en /api/upload-photo y no se puede
+  // revalidar. Lo que se exige aquí es que la foto venga de una subida real:
+  // inventar una URL no sirve porque el objeto tiene que existir, y reusar la
+  // de otro socio tampoco porque ya está referenciada. Para tener una foto
+  // propia hay que haber pasado el reto. Se comprueba antes de tocar `fans`
+  // para que un intento automatizado no consuma folio.
+  if (!(await fotoRecienSubida(supabase, urlFoto))) {
     return NextResponse.json(
-      { error: 'No pudimos verificar que eres una persona. Recarga la página e inténtalo de nuevo.' },
+      { error: 'No pudimos validar tu foto. Vuelve a tomarla e inténtalo de nuevo.' },
       { status: 403 }
     )
   }
-
-  const supabase = getSupabaseAdmin()
 
   // El correo se guarda siempre en minúsculas. UNIQUE(email) en Postgres
   // distingue mayúsculas, así que sin esto "Fan@correo.com" y "fan@correo.com"

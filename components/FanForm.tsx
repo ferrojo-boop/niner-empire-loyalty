@@ -28,6 +28,7 @@ export function FanForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<SubmitError | null>(null)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [reinicioTurnstile, setReinicioTurnstile] = useState(0)
 
   function handleChange(partial: Partial<FanFormData>) {
     setData((prev) => ({ ...prev, ...partial }))
@@ -46,12 +47,20 @@ export function FanForm() {
       const photoFormData = new FormData()
       photoFormData.append('photo', foto)
       photoFormData.append('nombre', data.nombre)
+      // El token va aquí, en la primera llamada: es la que cuesta almacenamiento.
+      if (turnstileToken) photoFormData.append('turnstileToken', turnstileToken)
 
       const uploadRes = await fetchConReintento('/api/upload-photo', {
         method: 'POST',
         body: photoFormData,
       })
-      if (!uploadRes.ok) throw new Error('Error al subir la foto')
+      if (!uploadRes.ok) {
+        const detalle = await uploadRes
+          .json()
+          .then((d: { error?: string }) => d?.error)
+          .catch(() => undefined)
+        throw new Error(detalle || 'Error al subir la foto')
+      }
       const { url } = await uploadRes.json()
 
       // 2. Guardar datos del fan
@@ -65,7 +74,6 @@ export function FanForm() {
           fanDesde: data.fanDesde,
           jugadorFavorito: data.jugadorFavorito,
           urlFoto: url,
-          turnstileToken,
         }),
       })
       // El correo ya tenía membresía. No es un fallo que se arregle
@@ -110,6 +118,10 @@ export function FanForm() {
               : 'Error inesperado',
       })
       setIsSubmitting(false)
+      // El token ya se gastó en el intento fallido. Se pide uno nuevo para que
+      // volver a presionar el botón tenga alguna posibilidad de funcionar.
+      setTurnstileToken(null)
+      setReinicioTurnstile((n) => n + 1)
     }
   }
 
@@ -145,6 +157,7 @@ export function FanForm() {
           isSubmitting={isSubmitting}
           error={error}
           onTurnstileToken={setTurnstileToken}
+          reinicioTurnstile={reinicioTurnstile}
         />
       )}
 
