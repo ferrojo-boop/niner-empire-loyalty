@@ -17,7 +17,7 @@ export default function PrivacidadPage() {
     <main className="privacy-page">
       <article className="privacy-doc">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="privacy-crest" src="/NinerEmpireMXok.png" alt="Niner Empire México" />
+        <img className="privacy-crest" src="/logo-niner-empire-2026.webp" alt="Niner Empire México" />
 
         <h1>Aviso de Privacidad</h1>
         <p className="privacy-lead">

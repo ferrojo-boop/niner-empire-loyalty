@@ -119,7 +119,7 @@ function LoginForm({ onLogin }: { onLogin: (s: Session) => void }) {
     <main className="staff-page">
       <form className="staff-card" onSubmit={handleSubmit}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="staff-crest" src="/NinerEmpireMXok.png" alt="Niner Empire México" />
+        <img className="staff-crest" src="/logo-niner-empire-2026.webp" alt="Niner Empire México" />
         <h1>Acceso staff</h1>
         <p className="staff-lead">Solo personal del club puede registrar visitas.</p>
 
