@@ -10,6 +10,14 @@ interface StepTriviaProps {
   onCorrect: () => void
 }
 
+// ⚠️ Esto NO es una defensa antibot y no debe tratarse como tal: la respuesta
+// correcta viaja en el código que descarga el navegador, y ningún endpoint la
+// valida. Un bot llama la API directo sin verla.
+//
+// Se conserva a propósito, como guiño para los fans. Quien protege el registro
+// es Cloudflare Turnstile en /api/upload-photo (ver lib/turnstile.ts). Si algún
+// día se quita este paso, no se pierde seguridad; si se quita Turnstile, sí.
+
 const OPTIONS = [3, 4, 5, 6]
 const CORRECT_ANSWER = 5
 

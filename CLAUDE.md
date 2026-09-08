@@ -173,6 +173,49 @@ where o.bucket_id = 'fan-photos'
   and not exists (select 1 from public.fans f where f.foto_url like '%' || o.name);
 ```
 
+## Seguridad
+
+Auditado el 2026-09-07. Lo que ya estaba bien, comprobado con la llave `anon`
+—que es pública y está en el navegador por diseño—: cero filas en las seis
+tablas de `public` y `42501` al intentar escribir. La `service_role` key no
+aparece en ningún archivo del bundle.
+
+### Qué protege el registro
+
+**Cloudflare Turnstile, verificado en el servidor.** El widget del navegador no
+protege nada por sí solo: un bot no lo ejecuta, llama la API directo. Lo que
+protege es `verificarTurnstile` en `lib/turnstile.ts`.
+
+⚠️ **El token se valida en `/api/upload-photo`, no en `/api/submit`.** Es
+deliberado: la subida es la llamada que cuesta almacenamiento, y protegerla
+cierra el abuso de llenar el bucket sin siquiera registrarse. Como los tokens
+son de un solo uso y no se pueden revalidar, `/api/submit` exige en su lugar
+que la foto venga de una subida real (`lib/fotoDelBucket.ts`):
+
+- inventar una URL no sirve: el objeto tiene que existir en el bucket
+- **reusar la foto de otro socio no sirve: ya está referenciada en `fans`**
+- tener una foto propia obliga a haber pasado el reto al subirla
+
+Ese segundo punto es el que no se ve venir: las fotos son públicas, así que sin
+él un bot tomaría la de un socio existente y crearía membresías saltándose
+Turnstile por completo.
+
+Dos casos se dejan pasar a propósito, y están probados: sin
+`TURNSTILE_SECRET_KEY` no se bloquea nada (permite desplegar antes de
+configurar), y si Cloudflare no responde tampoco (el momento de más registros
+es la puerta de un watch party; dejar a cien personas fuera por un incidente de
+Cloudflare es peor que la ventana de exposición, que se limpia borrando
+registros falsos). Un token presente pero inválido se rechaza siempre.
+
+Variables: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (pública) y `TURNSTILE_SECRET_KEY`
+(sensible, solo en Vercel).
+
+### El trivia no es seguridad
+
+`StepTrivia` tiene la respuesta correcta en el código del navegador y ningún
+endpoint la valida. **Se conserva como guiño para los fans, no como filtro.**
+Quitarlo no perdería seguridad; quitar Turnstile sí.
+
 ## Capacidad: el plan gratuito de Supabase
 
 **La tarjeta no se archiva.** `/tarjeta/[fanId]` la rearma en el navegador cada
