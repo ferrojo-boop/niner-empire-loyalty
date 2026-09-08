@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser'
-import { CheckCircleIcon, SpinnerIcon, WarningIcon } from '@/components/icons'
+import { CheckCircleIcon, SpinnerIcon, WarningIcon, CheckIcon } from '@/components/icons'
+import { REGLAS, LARGO_MINIMO, passwordValida, motivoDeSupabase } from '@/lib/politicaPassword'
 import '../staff.css'
 
 /**
@@ -42,8 +43,8 @@ export default function DefinirPasswordPage() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
+    if (!passwordValida(password)) {
+      setError('La contraseña todavía no cumple los requisitos de abajo.')
       return
     }
     if (password !== confirm) {
@@ -55,7 +56,14 @@ export default function DefinirPasswordPage() {
     try {
       const { error: updateError } = await getSupabaseBrowser().auth.updateUser({ password })
       if (updateError) {
-        setError('No se pudo guardar la contraseña. Pide una invitación nueva.')
+        // Supabase manda el motivo cuando rechaza la contraseña por débil.
+        // Repetirlo es mucho más útil que "pide otra invitación", que manda a la
+        // persona a un callejón cuando lo único malo era la contraseña.
+        const reasons = (updateError as { reasons?: readonly string[] }).reasons
+        setError(
+          motivoDeSupabase(reasons) ??
+            'No se pudo guardar la contraseña. Pide una invitación nueva.'
+        )
         setBusy(false)
         return
       }
@@ -126,9 +134,27 @@ export default function DefinirPasswordPage() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mínimo 8 caracteres"
+            placeholder={`Mínimo ${LARGO_MINIMO} caracteres`}
           />
         </div>
+
+        {/* Los requisitos se muestran mientras escribe, no al enviar: rechazar
+            sin decir qué falta es la forma más rápida de que alguien elija algo
+            débil en el siguiente intento. */}
+        {password !== '' && (
+          <ul className="staff-reglas" aria-live="polite">
+            {REGLAS.map((r) => {
+              const ok = r.cumple(password)
+              return (
+                <li key={r.id} className={ok ? 'ok' : ''}>
+                  <span aria-hidden="true">{ok ? <CheckIcon size={13} /> : '•'}</span>
+                  <span>{r.texto}</span>
+                  <span className="sr-only">{ok ? ' (cumple)' : ' (falta)'}</span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
 
         <div className="staff-field">
           <label htmlFor="pw2">Repite la contraseña</label>
