@@ -43,7 +43,15 @@ export function extractCardIdentifier(scanned: string): string | null {
   const fromUrl = value.match(/\/checkin\/([^/?#\s]+)/i)
   if (fromUrl) return decodeURIComponent(fromUrl[1])
 
-  if (/^NEL-\d+$/i.test(value)) return value.toUpperCase()
+  // El fan_id tiene dos formatos vivos: el viejo `NEL-<ms>` y el actual
+  // `NEL-<ms>-<8 hex>`. Se normaliza por partes y no con toUpperCase() sobre
+  // todo: el sufijo se guarda en minúsculas, y mayusculizarlo haría que la
+  // búsqueda no encontrara al socio.
+  const idDirecto = value.match(/^nel-(\d+)(?:-([0-9a-f]{8}))?$/i)
+  if (idDirecto) {
+    const [, ms, sufijo] = idDirecto
+    return sufijo ? `NEL-${ms}-${sufijo.toLowerCase()}` : `NEL-${ms}`
+  }
 
   // Folio de la tarjeta, con o sin el prefijo y con o sin ceros a la izquierda.
   const folio = value.match(/^(?:ne\s*[-–—]?\s*mx\s*[-–—]?\s*)?0*(\d{1,9})$/i)
