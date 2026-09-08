@@ -45,6 +45,18 @@ Tablas en `public`: `fans`, `staff`, `visits`, `rewards`, `fan_rewards`,
 (en desuso: se conserva por los registros viejos, ya no se escribe ni se lee),
 `ano_registro`, `created_at`.
 
+`visits` se llena sola: el trigger `visits_fill_member_data` copia `nombre` y
+`member_number` del socio en cada alta, y `fans_sync_visits_member_data` los
+actualiza en las visitas viejas si el socio cambia de nombre o de folio. El
+historial se lee sin cruzar tablas.
+
+**Los folios tienen huecos y así se quedan.** `member_number` sale de una
+secuencia de Postgres, que nunca reutiliza números: si un alta falla después de
+tomar el suyo —un correo repetido, por ejemplo— ese folio se pierde. Renumerar
+sería peor que el hueco, porque **el folio va impreso en las tarjetas que los
+socios ya descargaron**: la imagen en su teléfono diría un número y la base
+otro.
+
 Restricciones `UNIQUE` en `fans`: `fan_id`, `email` y `member_number`. La clave
 primaria es `id`, que la app no usa. Las tres importan porque el alta las choca
 en la práctica y `/api/submit` distingue entre ellas por el nombre de la
@@ -88,6 +100,21 @@ API: `/api/submit`, `/api/upload-photo`, `/api/recuperar`, `/api/keep-alive`,
 El candado de staff vive en el servidor (`lib/requireStaff.ts`): valida el
 Bearer token contra Supabase Auth y exige que el usuario esté en `staff` con
 `activo = true`. No confiar en la interfaz para esto.
+
+### Una asistencia por día, contada en hora de CDMX
+
+`/api/checkin/[fanId]` registra una sola visita por socio por día: si ya hay
+una, responde `alreadyCheckedIn` sin insertar.
+
+⚠️ **El corte del día se calcula en `America/Mexico_City`, no con la zona del
+servidor** (`lib/diaCDMX.ts`). Vercel y Supabase corren en UTC, y la medianoche
+UTC son las 18:00 en CDMX: usar la zona del servidor partía el domingo de NFL
+justo entre el juego de la tarde y el Sunday Night, así que quien pasaba lista
+en ambos recibía dos asistencias. Y al revés, quien registraba un sábado por la
+noche quedaba bloqueado el domingo por la mañana.
+
+El staff identifica al socio por QR (`fan_id`) o tecleando el folio, que se
+acepta como `NE-MX-009`, `009` o `9`.
 
 ### El alta borra la foto si no prospera
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { requireStaff } from '@/lib/requireStaff'
+import { inicioDelDiaCDMX } from '@/lib/diaCDMX'
 
 export async function POST(req: NextRequest, { params }: { params: { fanId: string } }) {
   // Solo el staff del club registra visitas. Cualquier otra cámara que lea el
@@ -32,15 +33,17 @@ export async function POST(req: NextRequest, { params }: { params: { fanId: stri
     return NextResponse.json({ error: 'Miembro no encontrado' }, { status: 404 })
   }
 
-  // Verificar si ya hay visita hoy
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Verificar si ya hay visita hoy. "Hoy" es el día en la Ciudad de México, no
+  // el del servidor: Vercel corre en UTC y su medianoche son las 18:00 en CDMX,
+  // que parte el domingo de NFL justo entre el juego de la tarde y el Sunday
+  // Night. Ver lib/diaCDMX.ts.
+  const inicioDelDia = inicioDelDiaCDMX()
 
   const { count: todayCount } = await supabase
     .from('visits')
     .select('*', { count: 'exact', head: true })
     .eq('fan_id', fan.id)
-    .gte('checked_in_at', today.toISOString())
+    .gte('checked_in_at', inicioDelDia.toISOString())
 
   const { count: totalCount } = await supabase
     .from('visits')
