@@ -81,7 +81,17 @@ export function FanForm() {
         return
       }
 
-      if (!submitRes.ok) throw new Error('Error al guardar tus datos')
+      // Si el servidor explicó qué está mal —un año fuera de rango, por
+      // ejemplo— se muestra su mensaje. El genérico solo queda para fallos que
+      // el socio no puede corregir, donde decirle "revisa tus datos" lo manda a
+      // buscar un error que no existe.
+      if (!submitRes.ok) {
+        const detalle = await submitRes
+          .json()
+          .then((d: { error?: string }) => d?.error)
+          .catch(() => undefined)
+        throw new Error(detalle || 'Error al guardar tus datos')
+      }
       const { fanId } = await submitRes.json()
 
       // 3. Ir a la página de la tarjeta

@@ -263,6 +263,39 @@ describe('POST /api/submit', () => {
     expect(new Set(espia.idsIntentados).size).toBe(3)
   })
 
+  // Un año fuera de rango llegaba al INSERT y moría en el CHECK de la base con
+  // un 500 genérico. Peor: fetchConReintento reintenta los 5xx, así que cada
+  // clic gastaba tres folios antes de mostrar un mensaje que no decía nada.
+  describe('validación del año', () => {
+    it('rechaza con 400 y un mensaje útil el año fuera de rango', async () => {
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
+
+      const res = await POST(peticion({ ...fanValido, fanDesde: 195 }))
+      const json = await res.json()
+
+      expect(res.status).toBe(400)
+      expect(json.error).toMatch(/año/i)
+      // Lo importante: no llegó al INSERT, así que no gastó folio.
+      expect(espia.idsIntentados).toHaveLength(0)
+    })
+
+    it('un 400 no se reintenta, a diferencia de un 500', async () => {
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 1 }, error: null }))
+
+      await POST(peticion({ ...fanValido, fanDesde: 3000 }))
+
+      expect(espia.idsIntentados).toHaveLength(0)
+    })
+
+    it('acepta un año válido', async () => {
+      mockClient.mockReturnValue(clienteFalso({ data: { member_number: 8 }, error: null }))
+
+      const res = await POST(peticion({ ...fanValido, fanDesde: 1995 }))
+
+      expect(res.status).toBe(200)
+    })
+  })
+
   // El widget del navegador no protege nada: un bot llama esta ruta directo.
   // Lo que protege es que el servidor exija un token que solo Cloudflare emite.
   describe('candado antibot', () => {

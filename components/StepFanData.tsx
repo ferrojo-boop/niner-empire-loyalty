@@ -1,6 +1,7 @@
 'use client'
 
 import { FanFormData } from '@/lib/types'
+import { PRIMER_ANO, ultimoAno, anoValido, mensajeAnoInvalido } from '@/lib/fanDesde'
 
 interface StepFanDataProps {
   data: FanFormData
@@ -8,14 +9,19 @@ interface StepFanDataProps {
   onNext: () => void
 }
 
-const currentYear = new Date().getFullYear()
+const currentYear = ultimoAno()
 
 export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
+  // El año se valida aquí y no solo con min/max del input: esos atributos son
+  // validación nativa de submit, y este formulario avanza con onClick.
+  const anoFueraDeRango = data.fanDesde !== '' && !anoValido(data.fanDesde)
+
   const isValid =
     data.nombre.trim() !== '' &&
     data.email.trim() !== '' &&
     data.whatsapp.trim() !== '' &&
-    data.fanDesde !== ''
+    data.fanDesde !== '' &&
+    !anoFueraDeRango
 
   return (
     <div className="flex flex-col gap-5">
@@ -78,11 +84,18 @@ export function StepFanData({ data, onChange, onNext }: StepFanDataProps) {
           inputMode="numeric"
           value={data.fanDesde}
           onChange={(e) => onChange({ fanDesde: Number(e.target.value) })}
-          min={1946}
+          min={PRIMER_ANO}
           max={currentYear}
           placeholder="Ej. 1995"
+          aria-invalid={anoFueraDeRango}
+          aria-describedby={anoFueraDeRango ? 'fan-desde-error' : undefined}
           className="rounded-lg px-4 py-3 bg-white text-black font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--niners-gold)]"
         />
+        {anoFueraDeRango && (
+          <p id="fan-desde-error" role="alert" className="text-sm font-bold text-[var(--niners-gold-light)]">
+            {mensajeAnoInvalido()}
+          </p>
+        )}
       </div>
 
       <button

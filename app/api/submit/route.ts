@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { verificarTurnstile, ipDelVisitante } from '@/lib/turnstile'
+import { anoValido, mensajeAnoInvalido } from '@/lib/fanDesde'
 
 // Cuántas veces se reintenta el alta si el fan_id ya existe. Con el sufijo
 // aleatorio un choque es casi imposible, así que esto es cinturón y tirantes:
@@ -86,6 +87,14 @@ export async function POST(req: NextRequest) {
 
   if (!nombre || !email || !fanDesde || !urlFoto) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  // El año se valida aquí y no se deja que lo rechace el CHECK de la base: ese
+  // camino devolvía un 500 genérico que el socio leía como "Error al guardar
+  // tus datos", y encima fetchConReintento lo reintentaba tres veces, gastando
+  // un folio por intento. Un 400 no se reintenta y dice qué corregir.
+  if (!anoValido(fanDesde)) {
+    return NextResponse.json({ error: mensajeAnoInvalido() }, { status: 400 })
   }
 
   // El candado antibot vive aquí y no en el widget: un bot no ejecuta el widget,
